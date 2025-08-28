@@ -50,4 +50,7 @@ completion = client.chat.completions.parse(
 result: ProductList = completion.choices[0].message.parsed
 
 
-print(json.dumps(result.model_dump(), indent=2))
+p = json.dumps(result.model_dump(), indent=2)
+t = json.loads(p)
+print(t)
+print(type(t))
