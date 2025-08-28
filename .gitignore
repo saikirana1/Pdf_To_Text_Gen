@@ -1,2 +1,9 @@
-/virtual-env
 virtual-env/
+practice_demo/
+.env
+invoice-pdf/
+open_ai/__pycache__
+charts/__pycache__
+pdf_highlights_data/__pycache__
+
+
