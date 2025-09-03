@@ -60,6 +60,8 @@ with st.form(key="chat_form", clear_on_submit=True):
 
 
 if submit_button and uploaded_file:
-    with st.spinner("📤 Processing file, please wait..."):
+    with st.spinner("Processing file, please wait..."):
         pdf_to_knowledge(uploaded_file)
-    st.success("✅ File uploaded and processed!")
+    st.success("File uploaded and processed!")
+
+query = st.chat_input("Ask Your Query:")
