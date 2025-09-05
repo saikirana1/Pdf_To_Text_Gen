@@ -36,7 +36,8 @@ def pdf_to_json_data_extract(file):
 
                         here in this pdf names connect like this Transaction Date as transaction_date,transaction_id is not their put null,
                         Withdrawal as  withdrawal,Deposit as deposit,Balance as balance,Narration as description
-                        here in this pdf date formate is date/month/year   
+                        here in this pdf date formate is date/month/year 
+                        here don't put empty while in this pdf has data  
                         Rules:
                          - give the current date available in pdf table
                         - Map fields to InvoiceData as accurately as possible.

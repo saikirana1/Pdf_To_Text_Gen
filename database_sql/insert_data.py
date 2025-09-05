@@ -10,8 +10,8 @@ def get_db_session():
     yield from get_session()
 
 
-def insert_data():
-    data = [
+def insert_data(data):
+    data2 = [
         {
             "transaction_id": None,
             "transaction_date": "30/03/2025",
@@ -81,7 +81,7 @@ def insert_data():
     with get_db_session() as session:
         for i in data:
             print(i)
-            txn_date_str = i.get("transaction_date")
+            txn_date_str = i.get("transaction_data")
             txn_date = (
                 datetime.strptime(txn_date_str, "%d/%m/%Y").date()
                 if txn_date_str

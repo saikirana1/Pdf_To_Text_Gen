@@ -1,67 +1,34 @@
+from open_ai.llm_sql_query import llm_sql_query
+from database_sql.query_data import query_data
 import streamlit as st
-import pandas as pd
-from open_ai.client import openai_client
-from open_ai.pdf_to_json_data_extract import pdf_to_json_data_extract
-from pdf_highlights_data.key_performance_indicator import key_performance_indicator
-from charts.pie_chart import py_chart
-from charts.bar_chart import (
-    bar_chart_revenue_per_product,
-    categorize,
-    bar_chart_quantity_per_category,
-    bar_chart_revenue_per_category,
-)
+from open_ai.synthesizing_data import synthesizing_data
 
-client = openai_client()
-st.header("Welcome to Konic")
-
-st.title("📑 Invoice Dashboard")
-
-
-def pdf_to_knowledge(uploaded_file):
-    if uploaded_file:
-        file = client.files.create(file=uploaded_file, purpose="user_data")
-        data = pdf_to_json_data_extract(file)
-
-        print(data)
-        key_performance_indicator(data)
-
-        pie_data = data.get("piechartdata", [])
-        print()
-        if pie_data:
-            py_chart(pie_data)
-
-        bar_data = data.get("barchartdata", [])
-        if bar_data:
-            bar_chart_revenue_per_product(bar_data)
-
-        items = data.get("items", [])
-        if items:
-            df_items = pd.DataFrame(items)
-
-            df_items["Category"] = df_items["Description"].apply(categorize)
-
-            cat_summary = (
-                df_items.groupby("Category")
-                .agg({"Qty": "sum", "Amount": "sum"})
-                .reset_index()
-            )
-
-            bar_chart_quantity_per_category(cat_summary)
-
-            bar_chart_revenue_per_category(cat_summary)
-
-        with st.expander("Extracted Invoice Data (Raw JSON)"):
-            st.json(data)
-
-
-with st.form(key="chat_form", clear_on_submit=True):
-    uploaded_file = st.file_uploader("Upload an Invoice PDF", type=["pdf"])
-    submit_button = st.form_submit_button("Upload")
-
-
-if submit_button and uploaded_file:
-    with st.spinner("Processing file, please wait..."):
-        pdf_to_knowledge(uploaded_file)
-    st.success("File uploaded and processed!")
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 query = st.chat_input("Ask Your Query:")
+
+if query:
+    st.session_state.messages.append({"query": query})
+
+    sql_query = llm_sql_query(query)
+    print("sql_query", sql_query)
+    sql_text = f"Generated SQL:\n```sql\n{sql_query}\n```"
+    st.session_state.messages.append({"sql_text": sql_text})
+
+    query_result = query_data(sql_query)
+    print("query_result", query_result)
+    final_result = synthesizing_data(query, sql_query, query_result)
+    st.session_state.messages.append({"final_result": final_result})
+
+
+for msg in st.session_state.messages:
+    if msg.get("query"):
+        with st.chat_message("user"):
+            st.write(msg["query"])
+    if msg.get("sql_text"):
+        with st.chat_message("ai"):
+            st.write(msg["sql_text"])
+    if msg.get("final_result"):
+        with st.chat_message("ai"):
+            st.write(msg["final_result"])
