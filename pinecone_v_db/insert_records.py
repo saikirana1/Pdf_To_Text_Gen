@@ -1,6 +1,6 @@
 from .get_db_table import get_db_table
 from .pinecone_api_client import pinecone_client
-from .create_embedding import create_embedding
+import uuid
 
 
 def insert_records(items):
@@ -9,17 +9,12 @@ def insert_records(items):
     index = pc.Index(db)
 
     for item in items:
-        print(item)
+        print("Upserting item:", item.get("description"))
 
-        vector = create_embedding(item["name"])
+        record = {"id": str(uuid.uuid4()), "description": item.get("description")}
 
-        record = (
-            item["id"],
-            vector,
-            {"product_name": item["name"]},
-        )
+        index.upsert_records(table, [record])
+        print("Upserted into Pinecone:", record)
 
-        index.upsert(vectors=[record], namespace=table)
-        print("upserted into pinecone")
-    print("Upserted successfully!")
+    print("All items upserted successfully!")
     return True

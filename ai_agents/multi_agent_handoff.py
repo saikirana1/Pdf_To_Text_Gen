@@ -1,15 +1,3 @@
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
-from agents import Runner, Tool, Agent, function_tool
-from open_ai.llm_sql_query import llm_sql_query
-
-# from pinecone_v_db.filter_records import filter_records
-from pydantic import BaseModel
-
-load_dotenv()
-
-
 # class MathAnswer(BaseModel):
 #     question: str
 #     answer: int
@@ -89,25 +77,38 @@ load_dotenv()
 #     print(result2.final_output)
 #     return
 
-
-from agents import Runner, Agent, function_tool
+import os
+from openai import OpenAI
+from dotenv import load_dotenv
 from pydantic import BaseModel
+from agents import Runner, Agent, function_tool
+
+from pinecone_v_db.get_db_table import get_db_table
+from pinecone_v_db.pinecone_api_client import pinecone_client
+
+load_dotenv()
 
 
-class MathAnswer(BaseModel):
-    question: str
-    answer: int
-    reasoning: str
+@function_tool
+def query_text(text: str):
+    print("hi")
+    db, table = get_db_table()
+    pc = pinecone_client()
+    index = pc.Index(db)
+
+    results = index.search(
+        namespace=table,
+        query={"inputs": {"text": text}, "top_k": 1},
+    )
+    return results
+
+
+class Result(BaseModel):
+    answer: dict  # store Pinecone response as a dict
 
 
 class Query(BaseModel):
     query: str
-
-
-@function_tool
-def solve_addition(a: int, b: int):
-    print("i am sai kiran")
-    return a + b
 
 
 def multi_agent_handoff():
@@ -117,24 +118,24 @@ def multi_agent_handoff():
         output_type=Query,
     )
 
-    math_agent = Agent(
-        name="MathAgent",
-        instructions="Use the tool to solve addition problems.",
-        tools=[solve_addition],
-        output_type=MathAnswer,
+    rag_agent = Agent(
+        name="RAG_AGENT",
+        instructions=" always exiguites if not sql then run function_tool If the query is about semantic search (not SQL), use the tool to search Pinecone and return results.",
+        tools=[query_text],
+        output_type=Result,
     )
 
     allocator_agent = Agent(
         name="Allocator",
         instructions="Forward queries to the right agent based on topic.",
-        handoffs=[sql_agent, math_agent],
+        handoffs=[sql_agent, rag_agent],
     )
 
     query1 = "What is my total withdrawal amount?"
-    query2 = "What is 6+9?"
+    query2 = "STARCHIK FOODS PRIVATE LIMIT"
 
     result1 = Runner.run_sync(allocator_agent, query1)
     result2 = Runner.run_sync(allocator_agent, query2)
 
-    print(result1.final_output)
-    print(result2.final_output)
+    print("SQL Agent output:", result1.final_output)
+    print("RAG Agent output:", result2.final_output)

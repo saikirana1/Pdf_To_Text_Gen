@@ -1,21 +1,22 @@
-from pinecone import ServerlessSpec
 from .pinecone_api_client import pinecone_client
+
 from .get_db_table import get_db_table
 
 
-def create_or_get_db():
-    pinecone = pinecone_client()
-    db_name, table_name = get_db_table()
-    if db_name not in pinecone.list_indexes().names():
-        pinecone.create_index(
-            name=db_name,
-            dimension=1536,
-            metric="cosine",
-            spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+client = pinecone_client()
+index_name, table = get_db_table()
+
+
+def create_db():
+    if index_name not in client.list_indexes():
+        client.create_index_for_model(
+            name=index_name,
+            cloud="aws",
+            region="us-east-1",
+            embed={
+                "model": "pinecone-sparse-english-v0",
+                "field_map": {"text": "description"},
+            },
         )
-    index_name = pinecone.Index(
-        name=db_name,
-        pool_threads=50,
-        connection_pool_maxsize=50,
-    )
-    return index_name
+
+    return client.Index(index_name)
