@@ -13,10 +13,10 @@ from pinecone_v_db.file_search import main
 #     insert_data = insert_records(data)
 
 
-# t = query_text("From:0706108700000029:STARCHIK FOODS PRIVATE LIMIT")
-# print(t)
+t = query_text("From:0706108700000029:STARCHIK FOODS PRIVATE LIMIT")
+print(t)
 
 
-import asyncio
+# import asyncio
 
-asyncio.run(main())
+# asyncio.run(main())

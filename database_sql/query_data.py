@@ -11,8 +11,8 @@ def get_db_session():
     yield from get_session()
 
 
-def query_data(query) -> str:
+def query_data(query: str):
     with get_db_session() as session:
-        query = query.strip().strip('"').strip("'")
-        result = session.exec(text(query)).all()
+        query_str = str(query).strip().strip('"').strip("'")
+        result = session.exec(text(query_str)).all()
     return result
