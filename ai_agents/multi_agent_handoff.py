@@ -1,13 +1,11 @@
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
-import json
 from pinecone_v_db.get_db_table import get_db_table
 from pinecone_v_db.pinecone_api_client import pinecone_client
 from database_sql.query_data import query_data
 import asyncio
+from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 
@@ -72,12 +70,18 @@ def multi_agent_handoff(input_prompt):
         tool_use_behavior="stop_on_first_tool",
     )
 
+    casual_agent = Agent(
+        name="Casual Agent",
+        instructions="You speak with the user in a casual tone and respond with delightful messages",
+        handoff_description="When user speaks casually with things like hello, hi etc, you carry a casual conversation with the user",
+    )
+
     allocator_agent = Agent(
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
-        handoffs=[sql_agent, rag_agent],
+        handoffs=[sql_agent, rag_agent, casual_agent],
     )
-    # re = Runner.run_sync(allocator_agent, input=input_prompt)
+
     re = asyncio.run(Runner.run(allocator_agent, input_prompt))
 
     print("Active Agent:", re.last_agent.name)

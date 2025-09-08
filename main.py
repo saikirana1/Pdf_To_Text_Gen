@@ -1,36 +1,25 @@
-from open_ai.llm_sql_query import llm_sql_query
-from database_sql.query_data import query_data
 import streamlit as st
-
-# from open_ai.synthesizing_data import synthesizing_data
 from ai_agents.multi_agent_handoff import multi_agent_handoff
+
+
+def append(msg):
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
+
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+
 query = st.chat_input("Ask Your Query:")
 
+
 if query:
-    st.session_state.messages.append({"query": query})
+    user_msg = {"role": "user", "content": query}
+    st.session_state.messages.append(user_msg)
+    append(user_msg)
 
-    sql_text = multi_agent_handoff(query)
-    # print("sql_query", sql_query)
-    # sql_text = f"Generated SQL:\n```sql\n{sql_query}\n```"
-    # st.session_state.messages.append({"sql_text": sql_text})
-
-    # query_result = query_data(sql_query)
-    # print("query_result", query_result)
-    # final_result = synthesizing_data(query, sql_text)
-    st.session_state.messages.append({"final_result": sql_text})
-
-
-for msg in st.session_state.messages:
-    if msg.get("query"):
-        with st.chat_message("user"):
-            st.write(msg["query"])
-    # if msg.get("sql_text"):
-    #     with st.chat_message("ai"):
-    #         st.write(msg["sql_text"])
-    if msg.get("final_result"):
-        with st.chat_message("ai"):
-            st.write(msg["final_result"])
+    result = multi_agent_handoff(query)
+    ai_msg = {"role": "ai", "content": result}
+    st.session_state.messages.append(ai_msg)
+    append(ai_msg)
