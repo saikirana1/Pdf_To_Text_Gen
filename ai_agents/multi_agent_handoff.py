@@ -21,9 +21,9 @@ def query_text(text: str) -> dict:
         )
         print(results)
         description = results["result"]["hits"][0]["fields"]["description"]
+        print(results["result"]["hits"][0])
     except (KeyError, IndexError):
         description = "No results found for this one"
-    print(description)
     return description
 
 
@@ -71,7 +71,7 @@ def multi_agent_handoff(input_prompt):
     )
 
     casual_agent = Agent(
-        name="Casual Agent",
+        name="Casual_Agent",
         instructions="You speak with the user in a casual tone and respond with delightful messages",
         handoff_description="When user speaks casually with things like hello, hi etc, you carry a casual conversation with the user",
     )
@@ -82,16 +82,17 @@ def multi_agent_handoff(input_prompt):
         handoffs=[sql_agent, rag_agent, casual_agent],
     )
 
-    re = asyncio.run(Runner.run(allocator_agent, input_prompt))
+    result = asyncio.run(Runner.run(allocator_agent, input_prompt))
 
-    print("Active Agent:", re.last_agent.name)
+    print("Active Agent:", result.last_agent.name)
     query_result = ""
     sql_query = ""
-    if re.last_agent.name == "SQL_AGENT":
-        query_result = query_data(re.final_output.query)
+    if result.last_agent.name == "SQL_AGENT":
+        query_result = query_data(result.final_output.query)
         print(query_result)
-        return query_result, re.final_output.query
-    elif re.last_agent.name == "RAG_AGENT":
-        print(re.final_output)
-        return re.final_output, sql_query
-    return "None your asking quations out of the subject"
+        return query_result, result.final_output.query
+    elif result.last_agent.name == "RAG_AGENT":
+        return result.final_output, sql_query
+    elif result.last_agent.name == "Casual_Agent":
+        return result.final_output
+    return "None , your asking quations out of the subject"

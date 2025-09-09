@@ -3,27 +3,35 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 from agents import Agent
+import asyncio
 
 load_dotenv()
 
-history_tutor_agent = Agent(
-    name="History Tutor",
-    handoff_description="Specialist agent for historical questions",
-    instructions="You provide assistance with historical queries. Explain important events and context clearly.",
-)
 
-math_tutor_agent = Agent(
-    name="Math Tutor",
-    handoff_description="Specialist agent for math questions",
-    instructions="You provide help with math problems. Explain your reasoning at each step and include examples",
-)
+def synthesizing_data(question, sql_command, final_result):
+    synthesize_data = Agent(
+        name="Synthesize Data",
+        handoff_description=f"""
+        Specialist agent for synthesizing data.
+        This is the user question: {question},
+        this is the SQL command: {sql_command},
+        and this is the final result: {final_result}.
+        Generate the best sentence that the user will understand.
+        don't use any currency symbol
+        """,
+        instructions="You provide help as a specialist agent for synthesizing data.",
+    )
 
-allocator_agent = Agent(
-    name="Allocator Agent",
-    instructions="You determine which agent to use based on the user's homework question",
-    handoffs=[history_tutor_agent, math_tutor_agent],
-)
+    allocator_agent = Agent(
+        name="Allocator Agent",
+        instructions="Run the Agent for the Synthesizing data",
+        handoffs=[synthesize_data],
+    )
 
-
-result = Runner.run_sync(allocator_agent, "What is the capital of India?")
-print(result.final_output)
+    result = asyncio.run(
+        Runner.run(
+            allocator_agent, "Generate the best sentence that the user will understand."
+        )
+    )
+    print(result.final_output)
+    return result.final_output
