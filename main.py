@@ -5,17 +5,17 @@ from ai_agents.multi_agent_handoff import multi_agent_handoff
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-query = st.chat_input("Ask Your Query:")
+user_query = st.chat_input("Ask Your Query:")
 
-if query:
-    st.session_state.messages.append({"query": query})
+if user_query:
+    st.session_state.messages.append({"query": user_query})
 
-    result = multi_agent_handoff(query)
-    if isinstance(result, tuple):
-        final_result = synthesizing_data(query, result[0], result[1])
+    query_result = multi_agent_handoff(user_query)
+    if isinstance(query_result, tuple):
+        final_result = synthesizing_data(user_query, query_result[0], query_result[1])
         st.session_state.messages.append({"final_result": final_result})
     else:
-        st.session_state.messages.append({"final_result": result})
+        st.session_state.messages.append({"final_result": query_result})
 
 
 for msg in st.session_state.messages:
