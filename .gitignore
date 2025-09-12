@@ -5,5 +5,19 @@ invoice-pdf/
 open_ai/__pycache__
 charts/__pycache__
 pdf_highlights_data/__pycache__
+demo.py
+product_images/
 
+bank.pdf
+data_base_testing.py
+demo2.py
+p_bank.pdf
+p-1.pdf
+transactions.json
+ai_agents/__pycache__
 
+database_sql/__pycache__
+json_data
+pinecone_v_db/__pycache__
+
+ai_agents_run.py
