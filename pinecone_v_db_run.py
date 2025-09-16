@@ -26,20 +26,40 @@ from open_ai.pdf_to_text_extract import pdf_to_text_extract
 import fitz  # PyMuPDF for reading PDF text
 
 # Function to read PDF text
-def load_pdf_text(pdf_path: str) -> str:
-    doc = fitz.open(pdf_path)
-    text = ""
-    for page in doc:
-        text += page.get_text("text") + "\n"
-    return text.strip()
+# def load_pdf_text(pdf_path: str) -> str:
+#     doc = fitz.open(pdf_path)
+#     text = ""
+#     for page in doc:
+#         text += page.get_text("text") + "\n"
+#     return text.strip()
 
-# Example usage
-pdf_path = "invoice-pdf/p-1.pdf"   # 👈 replace with your file path
-pdf_text = load_pdf_text(pdf_path)
+# # Example usage
+# pdf_path = "invoice-pdf/p-1.pdf"   # 👈 replace with your file path
+# pdf_text = load_pdf_text(pdf_path)
 
-# Now call your function that extracts structured data
-structured_data = pdf_to_text_extract(pdf_text)
+# # Now call your function that extracts structured data
+# structured_data = pdf_to_text_extract(pdf_text)
 
-print("✅ Final structured data:")
-print(structured_data)
- # Pydantic -> dict
+# print("✅ Final structured data:")
+# print(structured_data)
+#  # Pydantic -> dict
+
+data=[
+{
+    "transaction_data": "24/03/2025",
+   
+    "description": "NEFT_IN:null//ICICN52025032400471241/SALASA R TRADING COMPAN"
+  },
+  {
+    "transaction_data": "20/03/2025",
+   
+    "description": "From:XXXX0029:STARCHIK FOODS PRIVATE LIMIT"
+  },
+  {
+    "transaction_data": "14/03/2025",
+  
+    "description": "ATM ANN.CHRG FOR CARD-6615 YEAR ENDED 2024-25"
+  }
+]
+t=insert_records(data)
+print(t)

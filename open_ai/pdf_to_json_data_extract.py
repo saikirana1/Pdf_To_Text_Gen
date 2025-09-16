@@ -24,7 +24,7 @@ class Result(BaseModel):
     account: List[Account]
     transactions: List[Transaction]
 
-def pdf_to_json_data_extract(file):
+def pdf_to_json_data_extract(json_data,plain_text):
 
     print("Process started...")
 
@@ -35,8 +35,8 @@ def pdf_to_json_data_extract(file):
             "role": "system",
             "content": """
             You are an expert financial data extractor.
-            Your job is to carefully analyze PDFs (like bank statements or invoices)
-            and convert them into structured JSON following the provided schema.
+            Your job is to carefully analyze two json data
+            and convert them into structured  provided schema.
 
             Rules:
             - Map fields accurately even if headings differ.
@@ -50,15 +50,13 @@ def pdf_to_json_data_extract(file):
         {
             "role": "user",
             "content": [
-                {"type": "file", "file": {"file_id": file.id}},
                 {
                     "type": "text",
-                    "text": """
-                    Extract the data into the structured format (Result model).
-                    Return strictly valid JSON that matches the schema.
-                    some times you are giving invalid data options
-                    This is my data model
-                    class Account(BaseModel):
+                    "text": f"""
+                   This data {json_data} is all transactions related data with out eliminating the one record 
+                   return the required format based this messy data
+                   in This data {plain_text} extract the account details only, if the required data missing put 
+                   null
     account_number: Optional[str] = None
     ifsc_code: Optional[str] = None
     name: Optional[str] = None
@@ -75,8 +73,6 @@ class Transaction(BaseModel):
 class Result(BaseModel):
     account: List[Account]
     transactions: List[Transaction]
-    don't miss the balance and deposit
-    you are missing it ,please make sure put the balance
                     """,
                 },
             ],
@@ -85,9 +81,16 @@ class Result(BaseModel):
     response_format=Result,
 )
 
-    result: Result = completion.choices[0].message.parsed.model_dump_json(indent=4)
-    data=json.loads(result)
-    t=insert_data(data)
-    print(t)
+    parsed_result: Result = completion.choices[0].message.parsed
+    json_result = parsed_result.model_dump_json(indent=4)
+    print(json_result)
+    print(type(json_result))
+    data=json.loads(json_result)
+    dict_result = parsed_result.model_dump()
+    print(data)
+
+    t=insert_data(data )
+    # print(t)
    
-    return data
+
+    return dict_result

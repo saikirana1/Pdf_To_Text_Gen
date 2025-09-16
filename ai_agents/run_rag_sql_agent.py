@@ -1,0 +1,71 @@
+from pydantic import BaseModel
+from agents import Runner, Agent, function_tool, ModelSettings
+from pinecone_v_db.get_db_table import get_db_table
+from pinecone_v_db.pinecone_api_client import pinecone_client
+from database_sql.query_data import query_data
+import asyncio
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+class Result(BaseModel):
+    answer: str
+
+
+class Query(BaseModel):
+    query: str
+
+
+def run_rag_agent(quation,answer,description):
+    sql_agent = Agent(
+        name="SQL_AGENT",
+        instructions="""You are an expert at writing SQL queries for PostgreSQL database with the following schema:
+           CREATE TABLE transaction (   
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                transaction_id VARCHAR(255),
+                transaction_date DATE,             
+                withdrawal NUMERIC,
+                deposit NUMERIC,              
+                balance NUMERIC,
+                description TEXT
+            );
+          For a given input, write an simple and accurate PostgreSQL query to run against the database.
+          if the {answer } is like  no transaction information available,not found and none then use this SQL_AGENT
+          
+          """,
+        output_type=Query,
+        handoff_description=f"""
+                 based on this quation {quation} write the sql query on this {description}
+                 most of the time this will use finally write the query on description.
+                   
+        """,
+    )
+    continue_process=Agent(
+        name="Continue_AGENT",
+        instructions=f""" in this sentance is like There are no recent transactions available for STARCHIK FOODS PRIVATE LIMITED.,
+              not found and no data then don't run this use the SQL_AGENT """,
+        output_type=Query,
+        handoff_description=f"if this answer is like {answer} no date transaction found like that . don't use it Otherwise, use it",
+    )
+    
+
+    allocator_agent = Agent(
+        name="Allocator",
+        instructions="Forward queries to the appropriate agent based on topic.",
+        handoffs=[sql_agent,continue_process],
+    )
+
+    result = asyncio.run(Runner.run(allocator_agent, quation))
+
+    print("Active Agent:", result.last_agent.name)
+    query_result = ""
+    sql_query = ""
+    if result.last_agent.name == "SQL_AGENT":
+        print("from rag sql",result.final_output.query)
+        query_result = query_data(result.final_output.query)
+        # print(query_result)
+        return query_result
+    if result.last_agent.name == "Continue_AGENT":
+        print(result)
+        return result.final_output, sql_query

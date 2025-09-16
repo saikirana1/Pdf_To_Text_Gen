@@ -12,7 +12,11 @@ def get_db_session():
 
 
 def query_data(query: str):
-    with get_db_session() as session:
-        query_str = str(query).strip().strip('"').strip("'")
-        result = session.exec(text(query_str)).all()
-    return result
+    try:
+        with get_db_session() as session:
+            query_str = str(query).strip().strip('"').strip("'")
+            result = session.exec(text(query_str)).all()
+        return result
+    except Exception as e: 
+        print(f"Database error: {e}")
+        return "no data found"

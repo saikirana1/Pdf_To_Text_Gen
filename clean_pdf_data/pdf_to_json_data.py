@@ -1,18 +1,16 @@
 import pdfplumber
+import pandas as pd
 import json
 from typing import List, Tuple
 
 
+# ------------------- Helpers -------------------
 def _point_in_bbox(x: float, y: float, bbox: Tuple[float, float, float, float]) -> bool:
     x0, y0, x1, y1 = bbox
     return x0 <= x <= x1 and y0 <= y <= y1
 
 
 def _merge_words_to_lines(words: List[dict], y_tol: float = 5.0) -> List[str]:
-    """
-    Merge list of words (each with 'text','top','x0') into lines using a tolerance for top coordinate.
-    Assumes words are sorted by top then x0.
-    """
     lines = []
     current_line = []
     current_top = None
@@ -33,14 +31,47 @@ def _merge_words_to_lines(words: List[dict], y_tol: float = 5.0) -> List[str]:
     return lines
 
 
-def extract_plain_text_outside_tables(pdf_path: str,  y_tol: float = 5.0) -> dict:
-    """
-    Extract ONLY plain text that is OUTSIDE detected table bounding boxes.
-    - If a page has no table boxes, the whole page text is returned.
-    - If no plain text outside tables is found anywhere, an empty dict {} is written and returned.
-    - Output JSON structure when content exists:
-        {"plain_text": [{"page": 1, "content": "..."}, ...]}
-    """
+# ------------------- Extract Tables -------------------
+def extract_tables_from_pdf(pdf_path: str, skip_columns=None) -> list:
+    all_rows = []
+    headers = None
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            tables = page.extract_tables()
+            for table in tables:
+                if not table:
+                    continue
+
+                if headers is None:
+                    raw_headers = table[0]
+                    headers = [
+                        cell.replace("\n", " ").strip() if cell else ""
+                        for cell in raw_headers
+                    ]
+
+                for row in table[1:]:
+                    cleaned_row = [
+                        cell.replace("\n", " ").strip() if cell else "" for cell in row
+                    ]
+
+                    if any("Date" in h for h in cleaned_row) or all(c == "" for c in cleaned_row):
+                        continue
+                    all_rows.append(cleaned_row)
+
+    if all_rows and headers:
+        df = pd.DataFrame(all_rows, columns=headers[: len(all_rows[0])])
+    else:
+        df = pd.DataFrame()
+
+    if skip_columns:
+        df = df.drop(columns=skip_columns, errors="ignore")
+
+    return df.to_dict(orient="records")
+
+
+# ------------------- Extract Plain Text Outside Tables -------------------
+def extract_plain_text_outside_tables(pdf_path: str, y_tol: float = 5.0) -> list:
     pages_out = []
 
     with pdfplumber.open(pdf_path) as pdf:
@@ -52,25 +83,21 @@ def extract_plain_text_outside_tables(pdf_path: str,  y_tol: float = 5.0) -> dic
                     if bbox:
                         table_bboxes.append(bbox)
                 except Exception:
-                  
                     continue
 
-          
             if not table_bboxes:
                 text = page.extract_text()
                 if text and text.strip():
                     pages_out.append({"page": page_number, "content": text.strip()})
                 continue
 
-          
-            words = page.extract_words()  
+            words = page.extract_words()
             outside_words: List[dict] = []
             for w in words:
                 try:
                     mid_x = (float(w["x0"]) + float(w["x1"])) / 2.0
                     mid_y = (float(w["top"]) + float(w["bottom"])) / 2.0
                 except Exception:
-                  
                     continue
 
                 inside_any = False
@@ -88,13 +115,23 @@ def extract_plain_text_outside_tables(pdf_path: str,  y_tol: float = 5.0) -> dic
                 if content:
                     pages_out.append({"page": page_number, "content": content})
 
-           
+    return pages_out
 
-    result = {"plain_text": pages_out} if pages_out else {}
 
-    # with open(output_json, "w", encoding="utf-8") as f:
-    #     json.dump(result, f, indent=4, ensure_ascii=False)
-    print(type(result))
-    print(result)
+# ------------------- Combined Function -------------------
+def pdf_to_combined_json(pdf_path: str, skip_columns=None) -> dict:
+    tables = extract_tables_from_pdf(pdf_path, skip_columns=skip_columns)
+    plain_text = extract_plain_text_outside_tables(pdf_path)
+
+    result = {
+        "transaction_data": tables if tables else [],
+        "account_data": plain_text if plain_text else []
+    }
+
+    # Print result
+    final_result=json.dumps(result, indent=4, ensure_ascii=False)
+    print(final_result)
     return result
 
+
+# ------------------- Example Usage ------------------

@@ -6,12 +6,13 @@ from database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
-
+from .run_rag_sql_agent import run_rag_agent
 load_dotenv()
 
 
 @function_tool
 def query_text(text: str) -> dict:
+    
     try:
         db, table = get_db_table()
         pc = pinecone_client()
@@ -19,9 +20,9 @@ def query_text(text: str) -> dict:
         results = index.search(
             namespace=table, query={"inputs": {"text": text}, "top_k": 1}
         )
-        print(results)
+        # print(results)
         description = results["result"]["hits"][0]["fields"]["description"]
-        print(results["result"]["hits"][0])
+        # print(results["result"]["hits"][0])
     except (KeyError, IndexError):
         description = "No results found for this one"
     return description
@@ -89,10 +90,12 @@ def multi_agent_handoff(input_prompt):
     sql_query = ""
     if result.last_agent.name == "SQL_AGENT":
         query_result = query_data(result.final_output.query)
-        print(query_result)
+        # print(query_result)
         return query_result, result.final_output.query
     elif result.last_agent.name == "RAG_AGENT":
-        return result.final_output, sql_query
+        t=run_rag_agent(input_prompt,result.final_output,result.final_output)
+        # print("i am rag ",result.final_output)
+        return t, sql_query
     elif result.last_agent.name == "Casual_Agent":
         return result.final_output
     return "None , your asking quations out of the subject"

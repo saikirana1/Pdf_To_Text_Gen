@@ -3,7 +3,7 @@ import pandas as pd
 import json
 
 
-def pdf_to_json(pdf_path, output_json, skip_columns=None):
+def pdf_to_json(pdf_path,  skip_columns=None):
     all_rows = []
     headers = None 
 
@@ -45,9 +45,12 @@ def pdf_to_json(pdf_path, output_json, skip_columns=None):
  
     json_data = df.to_dict(orient="records")
 
-    with open(output_json, "w", encoding="utf-8") as f:
-        json.dump(json_data, f, indent=4, ensure_ascii=False)
+    
+    result=json.dumps(json_data,  indent=4)
 
-    print(f"✅ PDF data stored in {output_json} with dynamic headers")
+    print(type(result))
+    print(result)
+    print(type(result))
+    return result
 
 

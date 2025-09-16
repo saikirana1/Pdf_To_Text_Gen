@@ -26,15 +26,16 @@ class Result(BaseModel):
     account: List[Account]
     transactions: List[Transaction]
 
-def pdf_to_text_extract(pdf_data: str) -> Result:
+def pdf_to_text_extract(json_data: str,plan_json_data:str) -> Result:
     data_extract = Agent(
         name="Pdf_to_Text",
         handoff_description=f"""
-            You will extract the data {pdf_data} into the structured format below.
-            Headings may differ in the PDF, so infer the best mapping.
+            You will extract the data  into the structured format.
+            Headings may differ in the this json data, so infer the best mapping.
             Expected format: accounts and transactions.if their is no available data 
             Then put the null don't put invalid data be carefully understand some times their is 
-            no transaction id take care
+            no transaction id take care ,this is json data for account {plan_json_data} and this is thd
+            {json_data} for transactions. in this first json data plan_json_data extract the required field
         """,
         instructions="You provide help as a specialist agent for extracting structured data.",
         output_type=Result,
@@ -54,6 +55,5 @@ def pdf_to_text_extract(pdf_data: str) -> Result:
             "Extract and structure the data from PDF."
         )
     )
-
-    print(result.final_output)
+   
     return result.final_output

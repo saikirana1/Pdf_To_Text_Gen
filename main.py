@@ -4,8 +4,10 @@ from ai_agents.multi_agent_handoff import multi_agent_handoff
 from open_ai.client import openai_client
 import json
 from open_ai.pdf_to_json_data_extract import pdf_to_json_data_extract
-
-
+from open_ai.pdf_to_text_extract import pdf_to_text_extract
+from clean_pdf_data.pdf_json_data import pdf_to_json
+from clean_pdf_data.pdf_to_json_data import pdf_to_combined_json
+from clean_pdf_data.pdf_plain_text import extract_plain_text_outside_tables
 client=openai_client()
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -22,10 +24,17 @@ uploaded_file = st.file_uploader(
 )
 if uploaded_file:
     if file_type == "PDF":
-      file = client.files.create(file=uploaded_file, purpose="user_data")
-      data = pdf_to_json_data_extract(file)
-      print(data)
-      print(type(data))
+
+    #   json_data=pdf_to_combined_json(uploaded_file)
+      json_data=pdf_to_json(uploaded_file)
+      plain_data= extract_plain_text_outside_tables(uploaded_file)
+    #   print("i am json data")
+    #   print(type(json_data))
+      data=pdf_to_json_data_extract(json_data,plain_data)
+    #   print(data)
+    #   print(type(data))
+    #   print(len(data))
+
     elif file_type == "Invoice":
         st.write("Processing Invoice...")
     elif file_type == "Bank Statement":
