@@ -20,6 +20,10 @@ import json
 # print(data)
 
 # print(t)
+# t=create_db_and_tables()
+# print(t)
+
+
 
 
 # t = query()
