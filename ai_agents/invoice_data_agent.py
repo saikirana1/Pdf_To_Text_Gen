@@ -1,0 +1,96 @@
+from pydantic import BaseModel
+from agents import Runner, Agent, function_tool, ModelSettings
+from pinecone_v_db.get_db_table import get_db_table
+from pinecone_v_db.pinecone_api_client import pinecone_cli
+from database_sql.query_data import query_data
+import asyncio
+from dotenv import load_dotenv
+from openai import OpenAI
+from .run_rag_sql_agent import run_rag_agent
+load_dotenv()
+
+
+@function_tool
+def query_text(text: str) -> dict:
+    
+    try:
+        db, table = get_db_table()
+        pc = pinecone_cli()
+        index = pc.Index(db)
+        results = index.search(
+            namespace=table, query={"inputs": {"text": text}, "top_k": 1}
+        )
+        # print(results)
+        description = results["result"]["hits"][0]["fields"]["description"]
+        # print(results["result"]["hits"][0])
+    except (KeyError, IndexError):
+        description = "No results found for this one"
+    return description
+
+
+class Result(BaseModel):
+    answer: str
+
+
+class Query(BaseModel):
+    query: str
+
+
+def invoice_data_agent(input_prompt):
+    sql_agent = Agent(
+        name="SQL_AGENT",
+        model='gpt-4o-mini',
+        instructions="""You are an expert at writing SQL queries for PostgreSQL database with the following schema:
+           CREATE TABLE invoice (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    invoice_no VARCHAR UNIQUE,
+    invoice_date DATE,
+    CONSTRAINT uq_invoice_no UNIQUE (invoice_no)
+);
+
+CREATE TABLE item (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    invoice_no VARCHAR REFERENCES invoice(invoice_no) ON DELETE CASCADE,
+    item_name VARCHAR,
+    quantity FLOAT,
+    unit_price FLOAT,
+    unit_taxable_amount FLOAT,
+    tax VARCHAR,
+    unit_tax_amount FLOAT,
+    amount FLOAT,
+    mrp_price FLOAT,
+    gst_number VARCHAR,
+    CONSTRAINT fk_item_invoice FOREIGN KEY (invoice_no)
+        REFERENCES invoice(invoice_no)
+);
+          For a given input, write an simple and accurate PostgreSQL query to run against the database.""",
+        output_type=Query,
+        handoff_description=f"""When users gives asks for invoice related aggregates ,mathematical quation and time related quation
+        {input_prompt} this is user quation based and above my schema give sql query""",
+    )
+
+    casual_agent = Agent(
+        model='gpt-4o-mini',
+        name="Casual_Agent",
+        instructions="You speak with the user in a casual tone and respond with delightful messages",
+        handoff_description="When user speaks casually with things like hello, hi etc, you carry a casual conversation with the user",
+    )
+
+    allocator_agent = Agent(
+        model='gpt-4o-mini',
+        name="Allocator",
+        instructions="Forward queries to the appropriate agent based on topic.",
+        handoffs=[sql_agent, casual_agent],
+    )
+
+    result = asyncio.run(Runner.run(allocator_agent, input_prompt))
+
+    print("Active Agent:", result.last_agent.name)
+    query_result = ""
+    if result.last_agent.name == "SQL_AGENT":
+        query_result = query_data(result.final_output.query)
+        # print(query_result)
+        return query_result, result.final_output.query
+    elif result.last_agent.name == "Casual_Agent":
+        return result.final_output
+    return "None , your asking quations out of the subject"

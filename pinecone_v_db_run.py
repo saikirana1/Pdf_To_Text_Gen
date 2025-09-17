@@ -10,8 +10,8 @@ from pinecone_v_db.insert_chunks import insert_chunks
 from pinecone_v_db.query_chunk import  query_check
 
 
-# chunks=create_pdf_embedings()
-# result=insert_chunks(chunks)
-# print(result)
+chunks=create_pdf_embedings()
+result=insert_chunks(chunks)
+print(result)
 result=query_check("explain the summery of this")
 print(result)

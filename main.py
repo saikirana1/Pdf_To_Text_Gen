@@ -9,6 +9,11 @@ from open_ai.pdf_to_text_extract import pdf_to_text_extract
 from clean_pdf_data.pdf_json_data import pdf_to_json
 from clean_pdf_data.pdf_to_json_data import pdf_to_combined_json
 from clean_pdf_data.pdf_plain_text import extract_plain_text_outside_tables
+from ai_agents.invoice_data_agent import invoice_data_agent
+from pinecone_v_db.insert_chunks import insert_chunks
+from open_ai.create_pdf_embedings import create_pdf_embedings
+from pinecone_v_db.query_chunk import  query_check
+from open_ai.invoice_pdf_to_json import invoice_pdf_json
 client=openai_client()
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -33,7 +38,7 @@ uploaded_file = st.file_uploader(
     type=["pdf", "jpg", "png", "jpeg", "csv", "xlsx"],  
     key="file_uploader"
 )
-if side_bard=="PDF_text_document":
+if side_bard=="Pdf_Text_Document":
    
     if user_query:
         print("i am input prompt",user_query)
@@ -45,8 +50,20 @@ if side_bard=="PDF_text_document":
             st.session_state.messages.append({"final_result": final_result})
         else:
             st.session_state.messages.append({"final_result": query_result})
-if side_bard=="Invoice_pdf":
-    print("i am invoice")
+if side_bard=="Invoice_Pdf":
+     print("i am invoice")
+     if user_query:
+        print("i am input prompt",user_query)
+        st.session_state.messages.append({"query": user_query})
+
+        query_result = invoice_data_agent(user_query)
+        print(query_result)
+        if isinstance(query_result, tuple):
+            final_result = synthesizing_data(user_query, query_result[0], query_result[1])
+            st.session_state.messages.append({"final_result": final_result})
+        else:
+            st.session_state.messages.append({"final_result": query_result})
+    
 if side_bard=="Bank_Statement_Pdf":
     if user_query:
         st.session_state.messages.append({"query": user_query})
@@ -62,10 +79,12 @@ if side_bard=="Bank_Statement_Pdf":
 if uploaded_file:
     print("i am uploaded pdf")
     if file_type == "Pdf_Text_Document":
-      st.write("Processing Invoice...")
+    #   st.session_state["uploaded_pdf"] = None
+      pdf_chunks=create_pdf_embedings(uploaded_file)
+      insert_chunks(pdf_chunks)
     elif file_type == "Invoice_Pdf":
       file = client.files.create(file=uploaded_file, purpose="user_data")
-      data = pdf_to_json_data_extract(file)
+      data = invoice_pdf_json(file)
       print(data)
     #   print(type(data))
     #   data=pdf_to_json_data_extract(json_data,plain_data)

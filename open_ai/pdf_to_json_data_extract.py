@@ -3,29 +3,28 @@ import json
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date
-
-from database_sql.insert_invoice_data import insert_invoice_data
+from database_sql.insert_data import insert_data
 client = openai_client()
 
-class Item(BaseModel):
-    invoice_date: Optional[date] = None
-    invoice_no:  Optional[str] = None
-    item_name: Optional[str] = None
-    quantity: Optional[float] = None
-    unit_price: Optional[float] = None
-    unit_taxable_amount: Optional[float] = None
-    tax:  Optional[str]=None
-    unit_tax_amount:  Optional[float] = None
-    amount: Optional[float] = None
-    mrp_price:Optional[float] = None
-    gst_number:Optional[str] = None
+class Account(BaseModel):
+    account_number: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    name: Optional[str] = None
 
+class Transaction(BaseModel):
+    transaction_id: Optional[str] = None
+    transaction_date: Optional[date] = None
+    withdrawal: Optional[float] = None
+    deposit: Optional[float] = None
+    balance: Optional[float] = None
+    description: Optional[str] = None
+    check_number: Optional[str] = None
 
 class Result(BaseModel):
-      result:List[Item]
-   
+    account: List[Account]
+    transactions: List[Transaction]
 
-def pdf_to_json_data_extract(file):
+def pdf_to_json_data_extract(json_data,plain_text):
 
     print("Process started...")
 
@@ -36,25 +35,44 @@ def pdf_to_json_data_extract(file):
             "role": "system",
             "content": """
             You are an expert financial data extractor.
-            Your job is to carefully analyze invoice pdf
-            and convert them into structured  provided schema
-            if value is unavailable Then put null.
+            Your job is to carefully analyze two json data
+            and convert them into structured  provided schema.
 
             Rules:
             - Map fields accurately even if headings differ.
             - If data is missing, set it as null (do not hallucinate).
             - Be consistent in date formatting (YYYY-MM-DD).
+            - Ensure withdrawals, deposits, and balances are numbers (float).
+            - Keep transaction_id null if not available, don’t make one up.
+            - must fill the balance if not in their then null 
             """,
         },
         {
             "role": "user",
             "content": [
-                  {"type": "file", "file": {"file_id": file.id}},
                 {
                     "type": "text",
-                    "text": """
-                   This pdf data is invoice related data with out eliminating the one record 
+                    "text": f"""
+                   This data {json_data} is all transactions related data with out eliminating the one record 
                    return the required format based this messy data
+                   in This data {plain_text} extract the account details only, if the required data missing put 
+                   null
+    account_number: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    name: Optional[str] = None
+
+class Transaction(BaseModel):
+    transaction_id: Optional[str] = None
+    transaction_date: Optional[date] = None
+    withdrawal: Optional[float] = None
+    deposit: Optional[float] = None
+    balance: Optional[float] = None
+    description: Optional[str] = None
+    check_number: Optional[str] = None
+
+class Result(BaseModel):
+    account: List[Account]
+    transactions: List[Transaction]
                     """,
                 },
             ],
@@ -64,17 +82,11 @@ def pdf_to_json_data_extract(file):
 )
 
     parsed_result: Result = completion.choices[0].message.parsed
-    # json_result = parsed_result.model_dump_json(indent=4)
-    # print(json_result)
-    # print(type(json_result))
-    # data=json.loads(json_result)
+    json_result = parsed_result.model_dump_json(indent=4)
     dict_result = parsed_result.model_dump()
-    t=insert_invoice_data(dict_result)
-    print(t)
-    # print(data)
 
-    # t=insert_data(data )
-    # # print(t)
+    t=insert_data(dict_result )
+    print(t)
    
 
     return dict_result
