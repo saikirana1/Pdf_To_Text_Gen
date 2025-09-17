@@ -3,15 +3,15 @@ from .pinecone_api_client import pinecone_cli
 import uuid
 
 
-def insert_records(data):
+def insert_chunks(chunks):
     db, table = get_db_table()
+    table="pdf_chunks"
     pc = pinecone_cli()
     index = pc.Index(db)
+    for chunk in chunks:
+        print("Upserting item:", chunk.page_content)
 
-    for txn in data.get("transactions", []):
-        print("Upserting item:", txn.get("description"))
-
-        record = {"id": str(uuid.uuid4()), "description": txn.get("description")}
+        record = {"id": str(uuid.uuid4()), "description": chunk.page_content,"page_content":chunk.page_content,"source":chunk.metadata.get("source"),"page": chunk.metadata.get("page")}
 
         index.upsert_records(table, [record])
         print("Upserted into Pinecone:", record)

@@ -57,3 +57,7 @@ def pdf_to_text_extract(json_data: str,plan_json_data:str) -> Result:
     )
    
     return result.final_output
+
+
+
+

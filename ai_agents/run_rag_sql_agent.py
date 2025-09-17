@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
 from pinecone_v_db.get_db_table import get_db_table
-from pinecone_v_db.pinecone_api_client import pinecone_client
 from database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
@@ -19,6 +18,7 @@ class Query(BaseModel):
 
 def run_rag_agent(quation,answer,description):
     sql_agent = Agent(
+        model='gpt-4o-mini',
         name="SQL_AGENT",
         instructions="""You are an expert at writing SQL queries for PostgreSQL database with the following schema:
            CREATE TABLE transaction (   
@@ -42,6 +42,7 @@ def run_rag_agent(quation,answer,description):
         """,
     )
     continue_process=Agent(
+        model='gpt-4o-mini',
         name="Continue_AGENT",
         instructions=f""" in this sentance is like There are no recent transactions available for STARCHIK FOODS PRIVATE LIMITED.,
               not found and no data then don't run this use the SQL_AGENT """,
@@ -51,6 +52,7 @@ def run_rag_agent(quation,answer,description):
     
 
     allocator_agent = Agent(
+        model='gpt-4o-mini',
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
         handoffs=[sql_agent,continue_process],

@@ -45,4 +45,11 @@ class Item(SQLModel, table=True):
     tax: Optional[str] = Field(default=None, index=True)
     unit_tax_amount: Optional[float] = None
     amount: Optional[float] = None
+    mrp_price: Optional[float] = None
+    gst_number:Optional[str] = Field(default=None,index=True)
     invoice: Optional[Invoice] = Relationship(back_populates="items")
+
+
+
+
+
