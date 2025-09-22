@@ -6,26 +6,29 @@ from database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
-from .run_rag_sql_agent import run_rag_agent
+from .run_invoice_sql_agnet import run_rag_agent
 load_dotenv()
 
 
 @function_tool
-def query_text(text: str) -> dict:
+def query_name(text: str) -> dict:
     
     try:
         db, table = get_db_table()
+        table="ice_cream_name"
         pc = pinecone_cli()
         index = pc.Index(db)
         results = index.search(
             namespace=table, query={"inputs": {"text": text}, "top_k": 1}
         )
         # print(results)
-        description = results["result"]["hits"][0]["fields"]["description"]
+        name = results["result"]["hits"][0]["fields"]["description"]
         # print(results["result"]["hits"][0])
+        print("i am from rag--name")
+        print("name",name)
     except (KeyError, IndexError):
-        description = "No results found for this one"
-    return description
+        name = "No results found for this one"
+    return name
 
 
 class Result(BaseModel):
@@ -65,8 +68,25 @@ CREATE TABLE item (
 );
           For a given input, write an simple and accurate PostgreSQL query to run against the database.""",
         output_type=Query,
-        handoff_description=f"""When users gives asks for invoice related aggregates ,mathematical quation and time related quation
-        {input_prompt} this is user quation based and above my schema give sql query""",
+        handoff_description="""When users  asks for invoice related aggregates ,mathematical and if quations contains quantity,
+        unit_price, unit_taxable_amount,tax,unit_tax_amount,amount,mrp_price and gst_number then use this agent
+        """,
+    )
+    rag_agent = Agent(
+        name="RAG_AGENT",
+        model='gpt-4o-mini',
+        instructions=(
+            """You are a retrieval agent. 
+        If the user asks any question that related to the ice cream name such as Tub Strawberry , Lolly Strawberryor product name then run the tools
+        Do not answer directly. Always run the tool and return its output as the answer.
+        if quation on the item name and invoice_id  then use this other wise you leave it."""
+        ),
+        tools=[query_name],
+        output_type=Result,
+        handoff_description="""When users asks quation related to ice cream name and product name  such as Tub Strawberry , Lolly Strawberryor then run the tool
+         if quation contains the product name and invoice_id then use tool call """,
+        model_settings=ModelSettings(tool_choice="query_name"),
+        tool_use_behavior="stop_on_first_tool",
     )
 
     casual_agent = Agent(
@@ -80,17 +100,23 @@ CREATE TABLE item (
         model='gpt-4o-mini',
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
-        handoffs=[sql_agent, casual_agent],
+        handoffs=[sql_agent, casual_agent,rag_agent],
     )
 
     result = asyncio.run(Runner.run(allocator_agent, input_prompt))
 
     print("Active Agent:", result.last_agent.name)
     query_result = ""
+    sql_query=""
     if result.last_agent.name == "SQL_AGENT":
         query_result = query_data(result.final_output.query)
         # print(query_result)
         return query_result, result.final_output.query
     elif result.last_agent.name == "Casual_Agent":
         return result.final_output
+    elif result.last_agent.name == "RAG_AGENT":
+        print("result.final_output",result.final_output)
+        t=run_rag_agent(input_prompt,result.final_output)
+        # print("i am rag ",result.final_output)
+        return t, sql_query
     return "None , your asking quations out of the subject"

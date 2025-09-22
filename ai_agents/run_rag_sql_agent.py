@@ -44,7 +44,7 @@ def run_rag_agent(quation,answer,description):
     continue_process=Agent(
         model='gpt-4o-mini',
         name="Continue_AGENT",
-        instructions=f""" in this sentance is like There are no recent transactions available for STARCHIK FOODS PRIVATE LIMITED.,
+        instructions=""" in this sentance is like There are no recent transactions available for STARCHIK FOODS PRIVATE LIMITED.,
               not found and no data then don't run this use the SQL_AGENT """,
         output_type=Query,
         handoff_description=f"if this answer is like {answer} no date transaction found like that . don't use it Otherwise, use it",

@@ -5,7 +5,7 @@ from ai_agents.pdf_agent import pdf_agent
 from open_ai.client import openai_client
 import json
 from open_ai.pdf_to_json_data_extract import pdf_to_json_data_extract
-from open_ai.pdf_to_text_extract import pdf_to_text_extract
+from practice_demo.pdf_to_text_extract import pdf_to_text_extract
 from clean_pdf_data.pdf_json_data import pdf_to_json
 from clean_pdf_data.pdf_to_json_data import pdf_to_combined_json
 from clean_pdf_data.pdf_plain_text import extract_plain_text_outside_tables
@@ -92,9 +92,6 @@ if uploaded_file:
       json_data=pdf_to_json(uploaded_file)
       plain_data= extract_plain_text_outside_tables(uploaded_file)
       data=pdf_to_json_data_extract(json_data,plain_data)
-      
-
-
 
 for msg in st.session_state.messages:
     if msg.get("query"):

@@ -41,18 +41,30 @@ def multi_agent_handoff(input_prompt):
         name="SQL_AGENT",
         model='gpt-4o-mini',
         instructions="""You are an expert at writing SQL queries for PostgreSQL database with the following schema:
-           CREATE TABLE transaction (   
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                transaction_id VARCHAR(255),
-                transaction_date DATE,             
-                withdrawal NUMERIC,
-                deposit NUMERIC,              
-                balance NUMERIC,
-                description TEXT
-            );
+           CREATE TABLE account (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_number UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+    ifsc_code TEXT,
+    name TEXT
+);
+
+  CREATE TABLE transaction (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transaction_id TEXT,
+    transaction_date DATE,
+    withdrawal DOUBLE PRECISION,
+    deposit DOUBLE PRECISION,
+    balance DOUBLE PRECISION,
+    description TEXT,
+    check_number TEXT,
+    account_number UUID NOT NULL,
+    CONSTRAINT fk_transaction_account FOREIGN KEY (account_number) 
+        REFERENCES account(account_number)
+);
           For a given input, write an simple and accurate PostgreSQL query to run against the database.""",
         output_type=Query,
-        handoff_description="When users gives asks for transaction related aggregates ,mathematical quation and time related quation",
+        handoff_description=f"""When users gives asks for transaction related aggregates ,mathematical quation and time related quation
+        this is the quation {input_prompt}""",
     )
 
     rag_agent = Agent(
@@ -95,6 +107,7 @@ def multi_agent_handoff(input_prompt):
     if result.last_agent.name == "SQL_AGENT":
         query_result = query_data(result.final_output.query)
         # print(query_result)
+        print(result.final_output.query)
         return query_result, result.final_output.query
     elif result.last_agent.name == "RAG_AGENT":
         t=run_rag_agent(input_prompt,result.final_output,result.final_output)

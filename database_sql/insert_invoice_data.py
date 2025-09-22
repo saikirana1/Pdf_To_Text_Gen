@@ -1,5 +1,5 @@
 from .database_connection import get_session
-from pinecone_v_db.insert_records import insert_records
+from pinecone_v_db.insert_ice_cream_data import insert_ice_cream_data
 from contextlib import contextmanager
 from .models import Transaction,Account,Invoice,Item
 from datetime import date, datetime
@@ -11,7 +11,8 @@ def get_db_session():
 
 
 def insert_invoice_data(data ):
-    # pine_data=insert_records(data)
+ insert_ice_cream_data(data)
+
  with get_db_session() as session:
     records = data.get("result", [])
     if not records:
