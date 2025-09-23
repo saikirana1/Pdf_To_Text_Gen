@@ -11,7 +11,7 @@ def get_db_session():
     yield from get_session()
 
 
-def query_data(query: str):
+def  query_data(query: str):
     try:
         with get_db_session() as session:
             query_str = str(query).strip().strip('"').strip("'")

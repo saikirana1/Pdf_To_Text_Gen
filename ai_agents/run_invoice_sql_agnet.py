@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
-from pinecone_v_db.get_db_table import get_db_table
-from database_sql.query_data import query_data
+from ..pinecone_v_db.get_db_table import get_db_table
+from ..database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -16,7 +16,7 @@ class Query(BaseModel):
     query: str
 
 
-def run_rag_agent(input_prompt,name):
+async def run_rag_agent(input_prompt,name):
     sql_agent = Agent(
         name="SQL_AGENT",
         model='gpt-4o-mini',
@@ -65,15 +65,14 @@ CREATE TABLE item (
         handoffs=[sql_agent],
     )
 
-    result = asyncio.run(Runner.run(allocator_agent, name))
+    result = await Runner.run(allocator_agent, name)
 
     print("Active Agent: i am invoice", result.last_agent.name)
     query_result = ""
-    sql_query = ""
     if result.last_agent.name == "SQL_AGENT":
-        print("from rag sql",result.final_output.query)
+        # print("from rag sql",result.final_output.query)
         query_result = query_data(result.final_output.query)
         #print(query_data)
-        print("query_resultfdsfsf",query_result)
-        print(result.final_output.query,"result.final_output.query")
+        # print("query_resultfdsfsf",query_result)
+        # print(result.final_output.query,"result.final_output.query")
         return query_result

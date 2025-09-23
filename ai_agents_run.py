@@ -1,6 +1,6 @@
 from ai_agents.multi_agent_handoff import multi_agent_handoff
 import asyncio
-from ai_agents.demo import demo
+from ai_agents.main_agent import main_agent
 from clean_pdf_data.pdf_json_data import pdf_to_json
 from clean_pdf_data.pdf_plain_text import extract_plain_text_outside_tables
 from clean_pdf_data.pdf_to_json_data import pdf_to_combined_json
@@ -29,5 +29,8 @@ from clean_pdf_data.pdf_to_json_data import pdf_to_combined_json
 
 
 
-pdf_path = "invoice-pdf/p_bank.pdf"   # replace with your file
-pdf_to_combined_json(pdf_path, skip_columns=None)
+# pdf_path = "invoice-pdf/p_bank.pdf"   # replace with your file
+# pdf_to_combined_json(pdf_path, skip_columns=None)
+
+
+t=main_agent("for this invoice 18735 number total items")

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
-from pinecone_v_db.get_db_table import get_db_table
-from database_sql.query_data import query_data
+from ..pinecone_v_db.get_db_table import get_db_table
+from ..database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -16,7 +16,7 @@ class Query(BaseModel):
     query: str
 
 
-def run_rag_agent(quation,answer,description):
+async def run_rag_agent(quation,answer):
     sql_agent = Agent(
         model='gpt-4o-mini',
         name="SQL_AGENT",
@@ -36,7 +36,7 @@ def run_rag_agent(quation,answer,description):
           """,
         output_type=Query,
         handoff_description=f"""
-                 based on this quation {quation} write the sql query on this {description}
+                 based on this quation {quation} write the sql query on this {answer}
                  most of the time this will use finally write the query on description.
                    
         """,
@@ -58,16 +58,15 @@ def run_rag_agent(quation,answer,description):
         handoffs=[sql_agent,continue_process],
     )
 
-    result = asyncio.run(Runner.run(allocator_agent, quation))
+    result = await asyncio.run(Runner.run(allocator_agent, quation))
 
     print("Active Agent:", result.last_agent.name)
     query_result = ""
-    sql_query = ""
     if result.last_agent.name == "SQL_AGENT":
         print("from rag sql",result.final_output.query)
         query_result = query_data(result.final_output.query)
         # print(query_result)
-        return query_result
+        return result.last_agent.name,result.final_output.query,query_result
     if result.last_agent.name == "Continue_AGENT":
         print(result)
-        return result.final_output, sql_query
+        return result.last_agent.name,result.final_output.query

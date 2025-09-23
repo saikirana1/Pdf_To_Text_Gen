@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
-from pinecone_v_db.get_db_table import get_db_table
-from pinecone_v_db.pinecone_api_client import pinecone_cli
-from database_sql.query_data import query_data
+from ..pinecone_v_db.get_db_table import get_db_table
+from ..pinecone_v_db.pinecone_api_client import pinecone_cli
+from ..database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -39,7 +39,7 @@ class Query(BaseModel):
     query: str
 
 
-def invoice_data_agent(input_prompt):
+async def invoice_data_agent(input_prompt):
     sql_agent = Agent(
         name="SQL_AGENT",
         model='gpt-4o-mini',
@@ -89,34 +89,26 @@ CREATE TABLE item (
         tool_use_behavior="stop_on_first_tool",
     )
 
-    casual_agent = Agent(
-        model='gpt-4o-mini',
-        name="Casual_Agent",
-        instructions="You speak with the user in a casual tone and respond with delightful messages",
-        handoff_description="When user speaks casually with things like hello, hi etc, you carry a casual conversation with the user",
-    )
+ 
 
     allocator_agent = Agent(
         model='gpt-4o-mini',
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
-        handoffs=[sql_agent, casual_agent,rag_agent],
+        handoffs=[sql_agent,rag_agent],
     )
 
-    result = asyncio.run(Runner.run(allocator_agent, input_prompt))
+    result = await Runner.run(allocator_agent, input_prompt)
 
     print("Active Agent:", result.last_agent.name)
     query_result = ""
-    sql_query=""
     if result.last_agent.name == "SQL_AGENT":
         query_result = query_data(result.final_output.query)
         # print(query_result)
-        return query_result, result.final_output.query
-    elif result.last_agent.name == "Casual_Agent":
-        return result.final_output
+        return result.last_agent.name,query_result, result.final_output.query
     elif result.last_agent.name == "RAG_AGENT":
         print("result.final_output",result.final_output)
-        t=run_rag_agent(input_prompt,result.final_output)
+        final_result=run_rag_agent(input_prompt,result.final_output)
         # print("i am rag ",result.final_output)
-        return t, sql_query
+        return result.last_agent.name,final_result
     return "None , your asking quations out of the subject"

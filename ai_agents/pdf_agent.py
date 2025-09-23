@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
-from pinecone_v_db.get_db_table import get_db_table
-from pinecone_v_db.pinecone_api_client import pinecone_cli
-from database_sql.query_data import query_data
+from ..pinecone_v_db.get_db_table import get_db_table
+from ..pinecone_v_db.pinecone_api_client import pinecone_cli
+from ..database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -35,7 +35,7 @@ class Result(BaseModel):
     answer: str
 
 
-def pdf_agent(input_prompt):
+async def pdf_agent(input_prompt):
     
 
     rag_agent = Agent(
@@ -75,13 +75,13 @@ Answer the question based on the above context: {input_prompt} """,
         model='gpt-4o-mini'
     )
 
-    result = asyncio.run(Runner.run(allocator_agent, input_prompt,max_turns=50))
+    result = await Runner.run(allocator_agent, input_prompt,max_turns=50)
 
     print("Active Agent:", result.last_agent.name)
    
     if result.last_agent.name == "RAG_AGENT":
         print(result.final_output)
-        return result.final_output.answer
+        return result.last_agent.name,result.final_output.answer
     elif result.last_agent.name == "Casual_Agent":
-        return result.final_output
+        return result.last_agent.name,result.final_output
     return "None , your asking quations out of the subject"

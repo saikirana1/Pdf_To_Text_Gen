@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
-from pinecone_v_db.get_db_table import get_db_table
-from pinecone_v_db.pinecone_api_client import pinecone_cli
-from database_sql.query_data import query_data
+from ..pinecone_v_db.get_db_table import get_db_table
+from ..pinecone_v_db.pinecone_api_client import pinecone_cli
+from ..database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -36,7 +36,7 @@ class Query(BaseModel):
     query: str
 
 
-def multi_agent_handoff(input_prompt):
+async def multi_agent_handoff(input_prompt):
     sql_agent = Agent(
         name="SQL_AGENT",
         model='gpt-4o-mini',
@@ -99,20 +99,19 @@ def multi_agent_handoff(input_prompt):
         handoffs=[sql_agent, rag_agent, casual_agent],
     )
 
-    result = asyncio.run(Runner.run(allocator_agent, input_prompt))
+    result = await Runner.run(allocator_agent, input_prompt)
 
     print("Active Agent:", result.last_agent.name)
     query_result = ""
     sql_query = ""
     if result.last_agent.name == "SQL_AGENT":
         query_result = query_data(result.final_output.query)
+        # print("query_result",query_result)
         # print(query_result)
-        print(result.final_output.query)
-        return query_result, result.final_output.query
+        #print(result.final_output.query)
+        return result.last_agent.name,query_result, result.final_output.query
     elif result.last_agent.name == "RAG_AGENT":
-        t=run_rag_agent(input_prompt,result.final_output,result.final_output)
+        final_output=run_rag_agent(input_prompt,result.final_output)
         # print("i am rag ",result.final_output)
-        return t, sql_query
-    elif result.last_agent.name == "Casual_Agent":
-        return result.final_output
+        return result.last_agent.name,final_output
     return "None , your asking quations out of the subject"
