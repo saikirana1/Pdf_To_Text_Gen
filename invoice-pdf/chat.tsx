@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import React, { useState, useEffect } from "react";
 
-export const Route = createFileRoute('/about')({
+export const Route = createFileRoute('/chat')({
   component: RouteComponent,
 });
 
@@ -12,31 +12,26 @@ function RouteComponent() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setMessages([]); // Clear previous messages
 
-    // Close previous SSE connection if it exists
+
+  
     if (eventSource) {
       eventSource.close();
     }
-
-    // Create new SSE connection
     const encodedQuestion = encodeURIComponent(userQuestion);
     const source = new EventSource(`http://localhost:8000/get_response?user_question=${encodedQuestion}`);
-
     source.onmessage = (event) => {
       setMessages((prev) => [...prev, event.data]);
     };
-
-    source.onerror = (err) => {
       console.error("SSE error:", err);
       source.close();
     };
 
     setEventSource(source);
-    setUserQuestion(""); // Clear input after sending
+    setUserQuestion(""); 
   };
 
-  // Cleanup SSE when component unmounts
+
   useEffect(() => {
     return () => {
       if (eventSource) {
