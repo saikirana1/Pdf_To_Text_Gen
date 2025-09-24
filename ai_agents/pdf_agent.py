@@ -2,11 +2,13 @@ from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
 from ..pinecone_v_db.get_db_table import get_db_table
 from ..pinecone_v_db.pinecone_api_client import pinecone_cli
-from ..database_sql.query_data import query_data
+
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
-from .run_rag_sql_agent import run_rag_agent
+import asyncio
+from openai.types.responses import ResponseTextDeltaEvent
+from agents import Agent, Runner
 load_dotenv()
 
 
@@ -24,15 +26,12 @@ def query_chunk(text: str) -> dict:
        
         pdf_content = results["result"]["hits"][0]["fields"]["page_content"]
         print("i am pdf rag content")
-        print(results)
+        # print(results)
        
     except Exception as e:
         return "no result found from rag or technical issue"
     return pdf_content
 
-
-class Result(BaseModel):
-    answer: str
 
 
 async def pdf_agent(input_prompt):
@@ -46,8 +45,7 @@ async def pdf_agent(input_prompt):
         get data from their"""
         ),
         tools=[query_chunk],
-        output_type=Result,
-        handoff_description=f"""You are an assistant for question-answering tasks.
+        handoff_description="""You are an assistant for question-answering tasks.
 Use the following pieces of retrieved context to answer
 the question. If you don't know the answer, say that you
 don't know. DON'T MAKE UP ANYTHING.
@@ -55,33 +53,28 @@ for the context use from tools data
 
 ---
 
-Answer the question based on the above context: {input_prompt} """,
+Answer the question based on the above context: """,
         model_settings=ModelSettings(tool_choice="query_chunk"),
         tool_use_behavior="run_llm_again",
          model='gpt-4o-mini'
     )
-
-    casual_agent = Agent(
-        name="Casual_Agent",
-        instructions="You speak with the user in a casual tone and respond with delightful messages",
-        handoff_description="When user speaks casually with things like hello, hi etc, you carry a casual conversation with the user",
-        model='gpt-4o-mini'
-    )
-
     allocator_agent = Agent(
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
-        handoffs=[rag_agent, casual_agent],
-        model='gpt-4o-mini'
+        handoffs=[rag_agent],
+        model='gpt-4o-mini',
+        tool_use_behavior="stop_on_first_tool"
+
     )
 
-    result = await Runner.run(allocator_agent, input_prompt,max_turns=50)
+    result =  Runner.run_streamed(allocator_agent, input_prompt)
 
     print("Active Agent:", result.last_agent.name)
    
-    if result.last_agent.name == "RAG_AGENT":
-        print(result.final_output)
-        return result.last_agent.name,result.final_output.answer
-    elif result.last_agent.name == "Casual_Agent":
-        return result.last_agent.name,result.final_output
-    return "None , your asking quations out of the subject"
+    async for event in result.stream_events():
+         if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+            yield event.data.delta
+         else:
+             pass
+
+

@@ -5,7 +5,7 @@ from ..database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
-
+from ..data_model.run_rag_sql_model import SqlRagaent
 load_dotenv()
 
 class Result(BaseModel):
@@ -58,15 +58,15 @@ async def run_rag_agent(quation,answer):
         handoffs=[sql_agent,continue_process],
     )
 
-    result = await asyncio.run(Runner.run(allocator_agent, quation))
+    result = await Runner.run(allocator_agent, quation)
 
     print("Active Agent:", result.last_agent.name)
-    query_result = ""
     if result.last_agent.name == "SQL_AGENT":
         print("from rag sql",result.final_output.query)
         query_result = query_data(result.final_output.query)
+        print("query_result",query_result)
         # print(query_result)
-        return result.last_agent.name,result.final_output.query,query_result
+        return SqlRagaent(agent=result.last_agent.name,sql_query=result.final_output.query,sql_result=str(query_result[0]))
     if result.last_agent.name == "Continue_AGENT":
         print(result)
         return result.last_agent.name,result.final_output.query

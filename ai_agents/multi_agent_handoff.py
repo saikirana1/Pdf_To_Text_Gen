@@ -7,6 +7,8 @@ import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
 from .run_rag_sql_agent import run_rag_agent
+from ..data_model.multi_agent_handoff import SqlRagaent
+
 load_dotenv()
 
 
@@ -63,8 +65,8 @@ async def multi_agent_handoff(input_prompt):
 );
           For a given input, write an simple and accurate PostgreSQL query to run against the database.""",
         output_type=Query,
-        handoff_description=f"""When users gives asks for transaction related aggregates ,mathematical quation and time related quation
-        this is the quation {input_prompt}""",
+        handoff_description="""When users  asks for bank transaction related aggregates ,mathematical quation and time related quation
+        which means quation related to sql query then use this""",
     )
 
     rag_agent = Agent(
@@ -73,45 +75,45 @@ async def multi_agent_handoff(input_prompt):
         instructions=(
             """You are a retrieval agent. 
         If the user asks any question that contains or refers to a  description of transaction  
-        (e.g. NEFT, RTGS, cheque, IMPS, UTR numbers, company names in descriptions), 
+        (e.g. NEFT, RTGS, cheque, IMPS, UTR numbers,human names ,company names in descriptions), 
         you MUST call the tool `query_text` with the user's text. 
         Do not answer directly. Always run the tool and return its output as the answer."""
         ),
         tools=[query_text],
         output_type=Result,
-        handoff_description="""When users gives a  description of transaction, use this agent to find similar description of transaction
-            and  pass the user input to this tools """,
+        handoff_description="""Use this agent when the user provides a transaction description 
+or mentions names/company names to find similar transactions""",
         model_settings=ModelSettings(tool_choice="query_text"),
         tool_use_behavior="stop_on_first_tool",
     )
 
-    casual_agent = Agent(
-        model='gpt-4o-mini',
-        name="Casual_Agent",
-        instructions="You speak with the user in a casual tone and respond with delightful messages",
-        handoff_description="When user speaks casually with things like hello, hi etc, you carry a casual conversation with the user",
-    )
+   
 
     allocator_agent = Agent(
         model='gpt-4o-mini',
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
-        handoffs=[sql_agent, rag_agent, casual_agent],
+        handoffs=[sql_agent, rag_agent],
     )
 
     result = await Runner.run(allocator_agent, input_prompt)
 
     print("Active Agent:", result.last_agent.name)
-    query_result = ""
-    sql_query = ""
     if result.last_agent.name == "SQL_AGENT":
         query_result = query_data(result.final_output.query)
+        # print("query_result",query_result,type(query_result))
+        # print(type(query_result))
+
+        print("result.final_output.query",result.final_output.query)
         # print("query_result",query_result)
         # print(query_result)
         #print(result.final_output.query)
-        return result.last_agent.name,query_result, result.final_output.query
+        return SqlRagaent(agent=result.last_agent.name,sql_result=query_result, sql_query=result.final_output.query)
     elif result.last_agent.name == "RAG_AGENT":
-        final_output=run_rag_agent(input_prompt,result.final_output)
+        rag_result= await run_rag_agent(input_prompt,result.final_output)
+        ra_result=rag_result.model_dump()
+
+       
         # print("i am rag ",result.final_output)
-        return result.last_agent.name,final_output
+        return SqlRagaent(agent=ra_result.get("agent"),sql_result=ra_result.get("sql_result"), sql_query=ra_result.get("sql_query"))
     return "None , your asking quations out of the subject"

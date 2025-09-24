@@ -38,3 +38,4 @@ async def synthesizing_data(question, sql_command, final_result):
             yield event.data.delta
         else: 
             pass
+        

@@ -10,7 +10,7 @@ from .pdf_agent import pdf_agent
 from .multi_agent_handoff import multi_agent_handoff
 from ..open_ai.synthesizing_data import synthesizing_data
 from typing import Optional,List,Tuple
-from ..data_model.main_agent import DocumentAGENT,BankAgent,InvoiceAgent,ReturnData
+from ..data_model.main_agent import DocumentAGENT,InvoiceAgent,ReturnData,MainAgent
 load_dotenv()
 
 
@@ -22,10 +22,9 @@ class Query(BaseModel):
     query: str
 
 
-async def main_agent(input_prompt):
-    agents={"parent_agent":"","child_agent":""}
+async def main_agent(input_prompt)->ReturnData:
     bank_agent = Agent(
-        name="Bank_Agent",
+        name="BANK_AGENT",
         model='gpt-4o-mini',
         instructions="""You are an expert in identifying questions related to bank transactions and bank-related queries.""",
         output_type=Query,
@@ -33,7 +32,7 @@ async def main_agent(input_prompt):
     )
 
     invoice_agent = Agent(
-        name="Invoice_AGENT",
+        name="INVOICE_AGENT",
         model='gpt-4o-mini',
         instructions="""You are an expert in identifying questions related to invoice data or queries related to invoice data.""",
         output_type=Result,
@@ -41,11 +40,13 @@ async def main_agent(input_prompt):
     )
 
     document_agent = Agent(
-        name="Document_AGENT",
+        name="DOCUMENT_AGENT",
         model='gpt-4o-mini',
-        instructions="""You are an expert in identifying questions related to documents or text-based queries.""",
+        instructions="""You are an expert in identifying questions related to documents or text-based queries. such as 
+        any topic related to with out structured data """,
         output_type=Result,
-        handoff_description="""Use this agent if the question involves documents or specific text-based queries, such as those using RAG (Retrieval-Augmented Generation)."""
+        handoff_description="""Use this agent if the question involves documents or specific text-based queries, such as those using RAG (Retrieval-Augmented Generation).
+        with out structured data which relates to non tabular data then use this agent"""
     )
 
 
@@ -59,34 +60,27 @@ async def main_agent(input_prompt):
     result = await Runner.run(allocator_agent, input_prompt)
 
     print("Active Agent:", result.last_agent.name)
-    if result.last_agent.name == "Bank_Agent":
-        agent_type,query_result,sql_query = await multi_agent_handoff(input_prompt)
-        # agents["child_agent"]=agent_type
-        # agents["parent_agent"]=result.last_agent.name
-        
-        #final_syth_data = await synthesizing_data(input_prompt,query_result[1],query_result[0][0])
-        # print(result)
-        # print(query_result)
-        # print("this is query_result",query_result[0][0])
-        # print("this is sql query",query_result[1],type(query_result[1]))
-
-        # print(type(query_result[0]))
-        # query_result = query_data(query_result)
-        print("i am from bank")
-        # print(query_result)
-        # print(result.final_output.query)
-        return BankAgent(child_agent==agent_type,sql_result=query_result,sql_query=sql_query)
-    elif result.last_agent.name == "Invoice_AGENT":
-        result=await invoice_data_agent(input_prompt)
-        print(result)
-        # t=run_rag_agent(input_prompt,result.final_output,result.final_output)
-        # print("i am rag ",result.final_output)
-        return result
-    elif result.last_agent.name == "Document_AGENT":
-        pdf_result=await pdf_agent(input_prompt)
-        # print(result)
-        return pdf_result
+    if result.last_agent.name == "BANK_AGENT":
+        bank_account_result = await multi_agent_handoff(input_prompt)
+        sql_agent=bank_account_result.model_dump()
+        if sql_agent.get("agent")=="SQL_AGENT":
+            print("i am from bank",sql_agent)
+            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
+        elif sql_agent.get("agent")=="RAG_AGENT":
+            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
+    
+    elif result.last_agent.name == "INVOICE_AGENT":
+        invoice_result = await invoice_data_agent(input_prompt)
+        sql_agent=invoice_result.model_dump()
+        if sql_agent.get("agent")=="SQL_AGENT":
+            print("i am from invoice",sql_agent)
+            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
+        elif sql_agent.get("agent")=="RAG_AGENT":
+            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
+    elif result.last_agent.name == "DOCUMENT_AGENT":
+        # pdf_result=await pdf_agent(input_prompt)
+        return MainAgent(child_agent="RAG_AGENT",parent_agent=result.last_agent.name)
     else:
-       resutl=pdf_agent(input_prompt)
-    #    print(result)
+       print("i am else")
+       return MainAgent(child_agent="RAG_AGENT",parent_agent="DOCUMENT_AGENT")
     

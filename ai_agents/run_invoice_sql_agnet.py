@@ -5,7 +5,7 @@ from ..database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
-
+from ..data_model.invoice_data_agent import InvoiceAgent
 load_dotenv()
 
 class Result(BaseModel):
@@ -75,4 +75,4 @@ CREATE TABLE item (
         #print(query_data)
         # print("query_resultfdsfsf",query_result)
         # print(result.final_output.query,"result.final_output.query")
-        return query_result
+        return InvoiceAgent(agent=result.last_agent.name,sql_result=str(query_result[0]), sql_query=result.final_output.query)

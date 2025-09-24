@@ -7,6 +7,7 @@ import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
 from .run_invoice_sql_agnet import run_rag_agent
+from ..data_model.invoice_data_agent import InvoiceAgent
 load_dotenv()
 
 
@@ -89,8 +90,6 @@ CREATE TABLE item (
         tool_use_behavior="stop_on_first_tool",
     )
 
- 
-
     allocator_agent = Agent(
         model='gpt-4o-mini',
         name="Allocator",
@@ -101,14 +100,16 @@ CREATE TABLE item (
     result = await Runner.run(allocator_agent, input_prompt)
 
     print("Active Agent:", result.last_agent.name)
-    query_result = ""
     if result.last_agent.name == "SQL_AGENT":
         query_result = query_data(result.final_output.query)
         # print(query_result)
-        return result.last_agent.name,query_result, result.final_output.query
+        return InvoiceAgent(agent=result.last_agent.name,sql_result=str(query_result), sql_query=result.final_output.query)
     elif result.last_agent.name == "RAG_AGENT":
         print("result.final_output",result.final_output)
-        final_result=run_rag_agent(input_prompt,result.final_output)
+        return await run_rag_agent(input_prompt,result.final_output)
         # print("i am rag ",result.final_output)
-        return result.last_agent.name,final_result
+
     return "None , your asking quations out of the subject"
+
+
+

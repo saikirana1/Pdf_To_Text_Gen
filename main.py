@@ -1,7 +1,6 @@
 # import streamlit as st
 # from open_ai.synthesizing_data import synthesizing_data
 # from ai_agents.multi_agent_handoff import multi_agent_handoff
-# from ai_agents.pdf_agent import pdf_agent
 from open_ai.client import openai_client
 # import json
 # from open_ai.pdf_to_json_data_extract import pdf_to_json_data_extract
@@ -14,9 +13,9 @@ from open_ai.client import openai_client
 # from open_ai.create_pdf_embedings import create_pdf_embedings
 # from pinecone_v_db.query_chunk import  query_check
 # from open_ai.invoice_pdf_to_json import invoice_pdf_json
-import asyncio
-from openai.types.responses import ResponseTextDeltaEvent
-from agents import Agent, Runner
+# import asyncio
+# from openai.types.responses import ResponseTextDeltaEvent
+# from agents import Agent, Runner
 client=openai_client()
 # if "messages" not in st.session_state:
 #     st.session_state.messages = []
@@ -128,12 +127,17 @@ client=openai_client()
 #     asyncio.run(main())
 
 
-from services import get_data
+# from services import get_data
 
-if __name__ == "__main__":
-    result = get_data()
-    print(result)
-    data=result.model_dump_json()
-    print(result.model_dump)   # Convert to dictionary
-    print(result.model_dump_json())
-    print(data.get("position"))   # Convert to JSON string
+# if __name__ == "__main__":
+#     result = get_data()
+#     print(result)
+#     data=result.model_dump_json()
+#     print(result.model_dump)   # Convert to dictionary
+#     print(result.model_dump_json())
+#     print(data.get("position"))   # Convert to JSON string
+
+from ai_agents.pdf_agent import pdf_agent  # noqa: E402
+
+t=pdf_agent("what is python")
+print(t)
