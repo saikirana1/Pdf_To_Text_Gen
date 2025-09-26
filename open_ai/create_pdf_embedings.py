@@ -3,16 +3,12 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import  ChatOpenAI
 
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
-
 import os
 import tempfile
-import streamlit as st  
-import pandas as pd
+
+
 from dotenv import load_dotenv
-import tempfile
+
 load_dotenv()
 
 
