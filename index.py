@@ -2,7 +2,10 @@ from fastapi import FastAPI,Request
 from fastapi.responses import StreamingResponse
 import time
 from fastapi.middleware.cors import CORSMiddleware
-from .backend_server import router
+from backend_server import router
+import uvicorn
+import os
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -16,3 +19,14 @@ async def root():
     return {"message": "Hello from FastAPI!"}
 
 app.include_router(router.router)
+
+
+
+if __name__ == "__main__":
+    print("Starting webserver...")
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 8080)),
+        proxy_headers=True
+    )
