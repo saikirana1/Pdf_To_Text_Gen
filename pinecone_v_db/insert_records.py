@@ -1,17 +1,17 @@
 from .get_db_table import get_db_table
-from .pinecone_api_client import pinecone_client
+from .pinecone_api_client import pinecone_cli
 import uuid
 
 
-def insert_records(items):
+def insert_records(data):
     db, table = get_db_table()
-    pc = pinecone_client()
+    pc = pinecone_cli()
     index = pc.Index(db)
 
-    for item in items:
-        print("Upserting item:", item.get("description"))
+    for txn in data.get("transactions", []):
+        print("Upserting item:", txn.get("description"))
 
-        record = {"id": str(uuid.uuid4()), "description": item.get("description")}
+        record = {"id": str(uuid.uuid4()), "description": txn.get("description")}
 
         index.upsert_records(table, [record])
         print("Upserted into Pinecone:", record)

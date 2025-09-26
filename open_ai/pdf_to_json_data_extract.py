@@ -3,55 +3,90 @@ import json
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date
-
+from database_sql.insert_data import insert_data
 client = openai_client()
 
+class Account(BaseModel):
+    account_number: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    name: Optional[str] = None
 
-def pdf_to_json_data_extract(file):
-    class BankStatements(BaseModel):
-        transaction_id: Optional[str] = None
-        transaction_date: Optional[str] = None
-        withdrawal: Optional[float] = None
-        deposit: Optional[float] = None
-        balance: Optional[float] = None
-        description: Optional[str] = None
+class Transaction(BaseModel):
+    transaction_id: Optional[str] = None
+    transaction_date: Optional[date] = None
+    withdrawal: Optional[float] = None
+    deposit: Optional[float] = None
+    balance: Optional[float] = None
+    description: Optional[str] = None
+    check_number: Optional[str] = None
 
-    class BankStatementsData(BaseModel):
-        transactions: List[BankStatements] = Field(default_factory=list)
+class Result(BaseModel):
+    account: List[Account]
+    transactions: List[Transaction]
+
+def pdf_to_json_data_extract(json_data,plain_text):
 
     print("Process started...")
 
     completion = client.chat.completions.parse(
-        model="gpt-5",
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "file", "file": {"file_id": file.id}},
-                    {
-                        "type": "text",
-                        "text": """
-                        You are an expert in extracting structured data from PDFs. 
-                        Extract the PDF into a list of InvoiceData objects with the following fields:
+    model="gpt-4o-mini",
+    messages=[
+        {
+            "role": "system",
+            "content": """
+            You are an expert financial data extractor.
+            Your job is to carefully analyze two json data
+            and convert them into structured  provided schema.
 
-                        here in this pdf names connect like this Transaction Date as transaction_date,transaction_id is not their put null,
-                        Withdrawal as  withdrawal,Deposit as deposit,Balance as balance,Narration as description
-                        here in this pdf date formate is date/month/year 
-                        here don't put empty while in this pdf has data  
-                        Rules:
-                         - give the current date available in pdf table
-                        - Map fields to InvoiceData as accurately as possible.
-                       
-                        - Return the result strictly following the InvoiceList structure.
-                        """,
-                    },
-                ],
-            }
-        ],
-        response_format=BankStatementsData,
-    )
+            Rules:
+            - Map fields accurately even if headings differ.
+            - If data is missing, set it as null (do not hallucinate).
+            - Be consistent in date formatting (YYYY-MM-DD).
+            - Ensure withdrawals, deposits, and balances are numbers (float).
+            - Keep transaction_id null if not available, don’t make one up.
+            - must fill the balance if not in their then null 
+            """,
+        },
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"""
+                   This data {json_data} is all transactions related data with out eliminating the one record 
+                   return the required format based this messy data
+                   in This data {plain_text} extract the account details only, if the required data missing put 
+                   null
+    account_number: Optional[str] = None
+    ifsc_code: Optional[str] = None
+    name: Optional[str] = None
 
-    result: BankStatementsData = completion.choices[0].message.parsed
-    data = [item.model_dump() for item in result.transactions]
+class Transaction(BaseModel):
+    transaction_id: Optional[str] = None
+    transaction_date: Optional[date] = None
+    withdrawal: Optional[float] = None
+    deposit: Optional[float] = None
+    balance: Optional[float] = None
+    description: Optional[str] = None
+    check_number: Optional[str] = None
 
-    return data
+class Result(BaseModel):
+    account: List[Account]
+    transactions: List[Transaction]
+                    """,
+                },
+            ],
+        },
+    ],
+    response_format=Result,
+)
+
+    parsed_result: Result = completion.choices[0].message.parsed
+    json_result = parsed_result.model_dump_json(indent=4)
+    dict_result = parsed_result.model_dump()
+
+    t=insert_data(dict_result )
+    print(t)
+   
+
+    return dict_result

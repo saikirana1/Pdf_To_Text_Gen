@@ -1,22 +1,17 @@
-from pinecone_v_db.create_db import create_db
-from pinecone_v_db.insert_records import insert_records
-import json
-from pinecone_v_db.query_text import query_text
-from pinecone_v_db.file_search import main
-# db_create = create_db()
-
-# print(db_create)
-
-
-# with open("json_data/cleaned_data.json", "r") as f:
-#     data = json.load(f)
-#     insert_data = insert_records(data)
+# from pinecone_v_db.create_db import create_db
+# from pinecone_v_db.insert_records import insert_records
+# import json
+# from pinecone_v_db.query_text import query_text
+# from pinecone_v_db.file_search import main
+# # from pinecone_v_db.delete_namespace import delete_namespace
+# from open_ai.pdf_to_text_extract import pdf_to_text_extract
+from open_ai.create_pdf_embedings import create_pdf_embedings
+from pinecone_v_db.insert_chunks import insert_chunks
+from pinecone_v_db.query_chunk import  query_check
 
 
-t = query_text("From:0706108700000029:STARCHIK FOODS PRIVATE LIMIT")
-print(t)
-
-
-# import asyncio
-
-# asyncio.run(main())
+chunks=create_pdf_embedings()
+result=insert_chunks(chunks)
+print(result)
+result=query_check("explain the summery of this")
+print(result)

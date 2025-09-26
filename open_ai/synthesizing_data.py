@@ -4,11 +4,11 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from agents import Agent
 import asyncio
-
+from openai.types.responses import ResponseTextDeltaEvent
 load_dotenv()
+ 
 
-
-def synthesizing_data(question, sql_command, final_result):
+async def synthesizing_data(question, sql_command, final_result):
     synthesize_data = Agent(
         name="Synthesize Data",
         handoff_description=f"""
@@ -28,10 +28,14 @@ def synthesizing_data(question, sql_command, final_result):
         handoffs=[synthesize_data],
     )
 
-    result = asyncio.run(
-        Runner.run(
+    result = Runner.run_streamed(
             allocator_agent, "Generate the best sentence that the user will understand."
         )
-    )
-    print(result.final_output)
-    return result.final_output
+    async for event in result.stream_events():
+        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+            # print("se",event.data.delta)
+            # print(event.data.delta, end="", flush=True)
+            yield event.data.delta
+        else: 
+            pass
+        
