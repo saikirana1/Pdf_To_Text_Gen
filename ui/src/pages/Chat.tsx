@@ -10,7 +10,7 @@ function Chat() {
   const eventSourceRef = useRef<EventSource | null>(null); 
   const [chatData, setChatData] = useState<Message[]>([]);
   
-
+  let VITE_BACKEND_URL=import.meta.env.VITE_BACKEND_URL
   const handle_onclick = () => {
     if (!userQuestion.trim()) return;
     setChatData((prev) => [...prev, { role: "user", text: userQuestion }]);
@@ -18,9 +18,10 @@ function Chat() {
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
     }
+    
     const encodedQuestion = encodeURIComponent(userQuestion);
     const eventSource = new EventSource(
-      `http://localhost:8000/get_response?user_question=${encodedQuestion}`
+      `${VITE_BACKEND_URL}/get_response?user_question=${encodedQuestion}`
     );
 
     eventSource.onopen = () => {
