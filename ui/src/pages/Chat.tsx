@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import FileUpload from "./FileUpload";
 
 interface Message {
   role: "user" | "assistant";
@@ -107,7 +106,7 @@ useEffect(() => {
         </div>
       </div>
       <div className="col-span-3 flex items-center justify-items-center pr-4 text-white" >
-          <FileUpload/>
+          <div />
       </div>
     </div>
   );
