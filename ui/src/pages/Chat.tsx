@@ -7,7 +7,6 @@ interface Message {
 }
 
 function Chat() {
-  const [messages, setMessages] = useState<string[]>([]);
   const [userQuestion, setUserQuestion] = useState("");
   const eventSourceRef = useRef<EventSource | null>(null); 
   const [chatData, setChatData] = useState<Message[]>([]);

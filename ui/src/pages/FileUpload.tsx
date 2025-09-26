@@ -1,12 +1,12 @@
-import React, { useState } from "react";
 import axios from "axios";
+import { useState } from "react";
 
 function FileUpload() {
-  const [file, setFile] = useState(null);
+  const [file] = useState(null);
   const [message, setMessage] = useState(""); 
-  const handleFileChange = (e) => {
+  const handleFileChange:React.InputHTMLAttributes<HTMLInputElement>["onChange"] = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      // setFile(e.target.!files[0]);
       setMessage(""); 
     }
   };
