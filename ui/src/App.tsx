@@ -1,10 +1,8 @@
-import './App.css'
-import Navbar from './navbar'
 import { Route, Routes } from 'react-router-dom'
-import Home from './pages/Home'
+import './App.css'
+import Chat from './pages/Chat'
 import Login from './pages/Login'
 import UploadDocument from './pages/UploadDocument'
-import Chat from './pages/Chat'
 
 function App() {
 

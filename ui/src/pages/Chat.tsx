@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import FileUpload from "./FileUpload";
 
 interface Message {
   role: "user" | "assistant";
@@ -37,7 +38,6 @@ function Chat() {
           {...last, text: last.text + event.data}
         ]
       });
-      // setMessages(() => [event.data]);
       console.log("Received:", event.data);
     };
 
@@ -49,6 +49,7 @@ function Chat() {
     eventSourceRef.current = eventSource; 
     setUserQuestion(""); 
   };
+
 useEffect(() => {
     return () => {
       if (eventSourceRef.current) {
@@ -78,22 +79,37 @@ useEffect(() => {
           ))}
         </ul>
         <div className="bg-zinc-800 p-1 mt-2 rounded-2xl border border-zinc-700 flex h-16 fixed bottom-1 w-1/3 left-1/2 -translate-x-1/2">
-          <input
-            type="text"
-            className="w-full h-full p-3 outline-none bg-transparent text-white"
-            placeholder="Ask me anything..."
-            onChange={(e) => setUserQuestion(e.target.value)}
-            value={userQuestion}
-          />
-          <button
-            className="px-4 bg-blue-600 rounded-lg"
-            onClick={handle_onclick}
-          >
-            Ask
-          </button>
+                <form
+          onSubmit={(e) => {
+            e.preventDefault(); 
+            handle_onclick();
+          }}
+          className="flex w-full"
+        >
+              <input
+                type="text"
+                className="w-full h-full p-3 outline-none bg-transparent text-white"
+                placeholder="Ask me anything..."
+                onChange={(e) => setUserQuestion(e.target.value)}
+                value={userQuestion}
+              />
+                {/* <input
+    type="file"
+    // onChange={(e) => setUserFile(e.target.files[0])} // handle file selection
+  /> */}
+
+            <button
+              type="submit" 
+              className="px-4 bg-zinc-500 rounded-2xl text-white hover:bg-zinc-600 transition"
+            >
+              Ask
+            </button>
+        </form>
         </div>
       </div>
-      <div className="col-span-3 flex items-center justify-center text-white"></div>
+      <div className="col-span-3 flex items-center justify-items-center pr-4 text-white" >
+          <FileUpload/>
+      </div>
     </div>
   );
 }
