@@ -2,7 +2,7 @@ virtual-env/
 practice_demo/
 .env
 open_ai/__pycache__
-charts/__pycache__
+
 pdf_highlights_data/__pycache__
 demo.py
 product_images/
@@ -14,3 +14,9 @@ ai_agents/__pycache__
 database_sql/__pycache__
 
 pinecone_v_db/__pycache__
+__pycache__
+.vite
+charts
+json_data
+mcp_server
+invoice-pdf
