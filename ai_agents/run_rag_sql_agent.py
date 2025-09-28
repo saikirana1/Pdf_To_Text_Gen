@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
-from ..pinecone_v_db.get_db_table import get_db_table
-from ..database_sql.query_data import query_data
+from pinecone_v_db.get_db_table import get_db_table
+from database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
-from ..data_model.run_rag_sql_model import SqlRagaent
+from data_model.run_rag_sql_model import SqlRagaent
 load_dotenv()
 
 class Result(BaseModel):

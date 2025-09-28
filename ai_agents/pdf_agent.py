@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
-from ..pinecone_v_db.get_db_table import get_db_table
-from ..pinecone_v_db.pinecone_api_client import pinecone_cli
+from pinecone_v_db.get_db_table import get_db_table
+from pinecone_v_db.pinecone_api_client import pinecone_cli
 
 import asyncio
 from dotenv import load_dotenv
@@ -67,7 +67,7 @@ Answer the question based on the above context: """,
 
     )
 
-    result =  Runner.run_streamed(allocator_agent, input_prompt)
+    result = Runner.run_streamed(allocator_agent, input_prompt)
 
     print("Active Agent:", result.last_agent.name)
    

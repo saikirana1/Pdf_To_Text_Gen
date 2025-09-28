@@ -1,3 +1,4 @@
+charts
 virtual-env/
 practice_demo/
 .env
@@ -17,6 +18,7 @@ pinecone_v_db/__pycache__
 __pycache__
 .vite
 charts
-json_data
 mcp_server
+json_data
 invoice-pdf
+data_model
