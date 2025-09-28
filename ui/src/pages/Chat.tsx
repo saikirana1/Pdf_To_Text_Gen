@@ -8,10 +8,21 @@ interface Message {
 
 function Chat() {
   const [userQuestion, setUserQuestion] = useState("");
-  const eventSourceRef = useRef<EventSource | null>(null); 
+  const eventSourceRef = useRef<EventSource | null>(null);
   const [chatData, setChatData] = useState<Message[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint is 768px
+    };
+
+    handleResize(); // check on mount
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   
-  let VITE_BACKEND_URL=import.meta.env.VITE_BACKEND_URL
+  let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
   const handle_onclick = () => {
     if (!userQuestion.trim()) return;
     setChatData((prev) => [...prev, { role: "user", text: userQuestion }]);
@@ -26,7 +37,7 @@ function Chat() {
     );
 
     eventSource.onopen = () => {
-      setChatData(prev => [...prev, {role: "assistant", text: ""}])
+      setChatData(prev => [...prev, { role: "assistant", text: "" }])
     }
 
     eventSource.onmessage = (event) => {
@@ -35,7 +46,7 @@ function Chat() {
         const head = prev.slice(0, prev.length - 1);
         return [
           ...head,
-          {...last, text: last.text + event.data}
+          { ...last, text: last.text + event.data }
         ]
       });
       console.log("Received:", event.data);
@@ -46,11 +57,11 @@ function Chat() {
       eventSource.close();
     };
 
-    eventSourceRef.current = eventSource; 
-    setUserQuestion(""); 
+    eventSourceRef.current = eventSource;
+    setUserQuestion("");
   };
 
-useEffect(() => {
+  useEffect(() => {
     return () => {
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
@@ -60,43 +71,45 @@ useEffect(() => {
   }, []);
 
   return (
-    <div className="grid grid-cols-12 h-screen bg-zinc-900">
-      <div className="col-span-3 flex items-center justify-center text-white"></div>
-      <div className="col-span-6 flex flex-col bg-zinc-800 p-4 rounded-lg overflow-y-auto">
-        <ul className="flex flex-col space-y-2 flex-1 mb-20">
-          {chatData.map((item, index) => (
-            <li
-              key={index}
-              className={`p-3 rounded-lg max-w-[80%] break-words ${
-                item.role === "user"
-                  ? "text-white self-end text-right bg-gray-700"
-                : "text-white self-start text-left bg-gray-600"
-              }`}
-            >
+  
+    <div className="grid grid-cols-12 h-screen md:bg-zinc-900 bg-zinc-800">
+    { !isMobile && (
+        <div className="col-span-3 flex items-center justify-center text-white"></div>
+  )}
+        <div className="col-span-6 flex flex-col bg-zinc-800 p-4 rounded-lg overflow-y-auto">
+          <ul className="flex flex-col space-y-2 flex-1 mb-20">
+            {chatData.map((item, index) => (
+              <li
+                key={index}
+                className={`p-3 rounded-lg max-w-[80%] break-words ${item.role === "user"
+                    ? "text-white self-end text-right bg-zinc-900"
+                    : "text-white self-start text-left bg-zinc-900"
+                  }`}
+              >
              
-              <strong>{item.role === "user" ? "User" : "AI"}:</strong> {item.text}
-            </li>
-          ))}
-        </ul>
-        <div className="bg-zinc-800 p-1 mt-2 rounded-2xl border border-zinc-700 flex h-10 fixed bottom-3 w-1/3 left-1/2 -translate-x-1/2">
-                <form
-          onSubmit={(e) => {
-            e.preventDefault(); 
-            handle_onclick();
-          }}
-          className="flex w-full"
-        >
+                <strong>{item.role === "user" ? "User" : "AI"}:</strong> {item.text}
+              </li>
+            ))}
+          </ul>
+          <div className="bg-zinc-800 p-1 mt-2 rounded-2xl border border-zinc-600 flex h-10 fixed bottom-3 w-full md:w-1/2 left-1/2 -translate-x-1/2">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handle_onclick();
+              }}
+              className="flex w-full"
+            >
           
               <input
                 type="text"
-                className="w-full h-full p-3 outline-none bg-transparent text-white"
+                className="w-full h-full p-3 outline-none bg-transparent text-white overflow-auto"
                 placeholder="Ask me anything..."
                 onChange={(e) => setUserQuestion(e.target.value)}
                 value={userQuestion}
-               /> 
+              />
               <FileUpload />
 
-            {/* <button
+              {/* <button
               type="submit" 
               className="px-4 bg-zinc-500 rounded-2xl text-white hover:bg-zinc-600 transition"
             >
@@ -104,13 +117,16 @@ useEffect(() => {
             </button> */}
 
             
-        </form>
+            </form>
+          </div>
         </div>
-      </div>
-      <div className="col-span-3  pr-4 text-white" >
+        {!isMobile &&(
+          <div className="col-span-3  pr-4 text-white" >
         
-          <div />
-      </div>
+            <div />
+          </div>
+    )
+        }
     </div>
   );
 }

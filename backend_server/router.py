@@ -47,23 +47,7 @@ async def sse_endpoint(user_question: str):
                  return StreamingResponse(event_generator_pdf(user_question), media_type="text/event-stream")
             else:
                  print("nothing to match")
-# @router.post("/upload")
-# async def upload_file(file: UploadFile = File(...), background_tasks: BackgroundTasks = BackgroundTasks()):
-#     contents = await file.read()
-#     encoded_string = base64.b64encode(contents).decode('utf-8')
-#     file_id = str(uuid.uuid4())
-#     file_name = file.filename
-#     file_type = file.content_type
-#     print("file type is",file_type)
-#     if "pdf" in file_type:
-#        document_agent=DocumentAGENT(file_name=file_name,file_data=encoded_string,file_type=file_type,file_id=file_id)
-#        background_tasks.add_task(synthesizing_data,document_agent)
-#     elif "invoice" in file_type or "octet-stream" in file_type:
-#        invoice_agent=InvoiceAgent(file_name=file_name,file_data=encoded_string,file_type=file_type,file_id=file_id)
-#        background_tasks.add_task(synthesizing_data,invoice_agent)
-#     else:
-#        return {"status": "error", "message": "Unsupported file type"}
-#     return {"status": "success", "file_id": file_id, "file_name": file_name}
+
 
 async def notify_user(email: str):
     await asyncio.sleep(5)

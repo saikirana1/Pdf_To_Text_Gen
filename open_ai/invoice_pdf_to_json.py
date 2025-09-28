@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date
 
-# from database_sql.insert_invoice_data import insert_invoice_data
+from database_sql.insert_invoice_data import insert_invoice_data
 client = openai_client()
 
 class Item(BaseModel):
@@ -67,18 +67,9 @@ def invoice_pdf_json(file_path):
         )
 
         parsed_result: Result = completion.choices[0].message.parsed
-        # json_result = parsed_result.model_dump_json(indent=4)
-        # print(json_result)
-        # print(type(json_result))
-        # data=json.loads(json_result)
         dict_result = parsed_result.model_dump()
-        # t = insert_invoice_data(dict_result)
-        # print(t)
+        t = insert_invoice_data(dict_result)
+        print(t)
         print(dict_result, "dict_result====================================>")
-        # print(data)
-
-        # t=insert_data(data )
-        # # print(t)
-   
 
     return dict_result

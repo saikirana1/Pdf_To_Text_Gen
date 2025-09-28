@@ -85,8 +85,8 @@ class Result(BaseModel):
     json_result = parsed_result.model_dump_json(indent=4)
     dict_result = parsed_result.model_dump()
 
-    # t=insert_data(dict_result )
-    # print(t)
+    t = insert_data(dict_result)
+    print(t)
    
 
     return dict_result
