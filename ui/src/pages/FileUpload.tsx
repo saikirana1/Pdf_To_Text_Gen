@@ -1,5 +1,4 @@
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { Button, Typography } from "@mui/material";
+import { Button } from "@mui/material";
 import axios from "axios";
 import AttachmentIcon from "@mui/icons-material/Attachment";
 import { useState } from "react";
@@ -16,7 +15,7 @@ function FileUpload() {
     if (!selectedFile) return;
 
     setFileName(selectedFile.name);
-    console.log("Selected file:", selectedFile.name);
+    console.log("Selected file:", fileName);
 
     const formData = new FormData();
     formData.append("file", selectedFile);
@@ -31,6 +30,7 @@ function FileUpload() {
       );
       setMessage("Upload successful!");
       console.log("Upload Success:", response.data);
+      console.log(message);
     } catch (error) {
       setMessage("Upload failed.");
       console.error("Upload Error:", error);
