@@ -13,10 +13,10 @@ function Chat() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768); // md breakpoint is 768px
+      setIsMobile(window.innerWidth < 768);
     };
 
-    handleResize(); // check on mount
+    handleResize();
     window.addEventListener("resize", handleResize);
 
     return () => window.removeEventListener("resize", handleResize);
@@ -69,13 +69,16 @@ function Chat() {
       }
     };
   }, []);
+  console.log(isMobile)
 
   return (
-  
-    <div className="grid grid-cols-12 h-screen md:bg-zinc-900 bg-zinc-800">
-    { !isMobile && (
-        <div className="col-span-3 flex items-center justify-center text-white"></div>
-  )}
+
+   <div className = "grid md:grid-cols-12 h-screen md:bg-zinc-900 bg-zinc-800" >
+    {!isMobile && (
+      <div className="col-span-3 flex items-center justify-center text-white"></div>
+          )
+       }
+
         <div className="col-span-6 flex flex-col bg-zinc-800 p-4 rounded-lg overflow-y-auto">
           <ul className="flex flex-col space-y-2 flex-1 mb-20">
             {chatData.map((item, index) => (
@@ -107,27 +110,25 @@ function Chat() {
                 onChange={(e) => setUserQuestion(e.target.value)}
                 value={userQuestion}
               />
-              <FileUpload />
 
-              {/* <button
+              <button
               type="submit" 
               className="px-4 bg-zinc-500 rounded-2xl text-white hover:bg-zinc-600 transition"
             >
               Ask
-            </button> */}
-
+          </button>
+          {!userQuestion &&
+            (
+              <FileUpload />
+            )
+         }
             
             </form>
           </div>
         </div>
-        {!isMobile &&(
-          <div className="col-span-3  pr-4 text-white" >
-        
-            <div />
-          </div>
-    )
-        }
-    </div>
+       {!isMobile && <div className="col-span-3 pr-4 text-white"></div>}
+        </div>
+   
   );
 }
 
