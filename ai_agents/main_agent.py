@@ -8,9 +8,9 @@ from .invoice_data_agent import invoice_data_agent
 from .pdf_agent import pdf_agent
 
 from .multi_agent_handoff import multi_agent_handoff
-from ..open_ai.synthesizing_data import synthesizing_data
+from open_ai.synthesizing_data import synthesizing_data
 from typing import Optional,List,Tuple
-from ..data_model.main_agent import DocumentAGENT,InvoiceAgent,ReturnData,MainAgent
+from data_model.main_agent import DocumentAGENT,InvoiceAgent,ReturnData,MainAgent
 load_dotenv()
 
 

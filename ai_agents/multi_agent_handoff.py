@@ -1,13 +1,13 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings
-from ..pinecone_v_db.get_db_table import get_db_table
-from ..pinecone_v_db.pinecone_api_client import pinecone_cli
-from ..database_sql.query_data import query_data
+from pinecone_v_db.get_db_table import get_db_table
+from pinecone_v_db.pinecone_api_client import pinecone_cli
+from database_sql.query_data import query_data
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
 from .run_rag_sql_agent import run_rag_agent
-from ..data_model.multi_agent_handoff import SqlRagaent
+from data_model.multi_agent_handoff import SqlRagaent
 
 load_dotenv()
 
