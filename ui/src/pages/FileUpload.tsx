@@ -7,6 +7,7 @@ import { useState } from "react";
 function FileUpload() {
   const [fileName, setFileName] = useState("");
   const [message, setMessage] = useState("");
+  let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -22,7 +23,7 @@ function FileUpload() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/upload",
+        `${VITE_BACKEND_URL}/upload_document`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
