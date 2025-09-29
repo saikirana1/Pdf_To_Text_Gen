@@ -61,29 +61,35 @@ async def notify(email: str, background_tasks: BackgroundTasks):
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
-    pdf_bytes = await file.read()
-    filename = file.filename
-    _, file_extension = os.path.splitext(filename)
-    with open(f"demo{file_extension}", "wb") as f:
-        f.write(pdf_bytes)
-    # print("file type is", file_extension)
-    two_pages_data = extract_pages(f"demo{file_extension}")
-    agent_result = await data_decison_agent(two_pages_data)
-    agent = agent_result.model_dump().get("agent")
-    print(type(agent))
-    if agent == "BANK_DATA_AGENT":
-        table_data = pdf_to_json(f"demo{file_extension}", skip_columns=None)
-        plan_text = extract_plain_text_outside_tables(f"demo{file_extension}")
-        result = pdf_to_json_data_extract(table_data, plan_text)
-        print("extracted result is", result)
+    try:
+        pdf_bytes = await file.read()
+        filename = file.filename
+        _, file_extension = os.path.splitext(filename)
+        with open(f"demo{file_extension}", "wb") as f:
+            f.write(pdf_bytes)
+        # print("file type is", file_extension)
+        two_pages_data = extract_pages(f"demo{file_extension}")
+        agent_result = await data_decison_agent(two_pages_data)
+        agent = agent_result.model_dump().get("agent")
+        print(type(agent))
+        if agent == "BANK_DATA_AGENT":
+            table_data = pdf_to_json(f"demo{file_extension}", skip_columns=None)
+            plan_text = extract_plain_text_outside_tables(f"demo{file_extension}")
+            result = pdf_to_json_data_extract(table_data, plan_text)
+            print("extracted result is", result)
 
-    elif agent == "INVOICE_AGENT":
-        print("i am in invoice agent elif===========>")
-        result = invoice_pdf_json(f"demo{file_extension}")
-        print("extracted result is", result)
-    elif agent == "NORMAL_DATA_AGENT":
-        data = create_pdf_embedings(f"demo{file_extension}")
-        result = insert_chunks(data)
-        print("extracted result is", result)
+        elif agent == "INVOICE_AGENT":
+            print("i am in invoice agent elif===========>")
+            result = invoice_pdf_json(f"demo{file_extension}")
+            print("extracted result is", result)
+        elif agent == "NORMAL_DATA_AGENT":
+            data = create_pdf_embedings(f"demo{file_extension}")
+            result = insert_chunks(data)
+            print("extracted result is", result)
 
-    return {"status": "success", "extracted_text": two_pages_data}
+    except Exception as e:
+        return {"status": "error", "result": "sd"}
+    return {
+        "status": "success",
+        "result": two_pages_data,
+    }
