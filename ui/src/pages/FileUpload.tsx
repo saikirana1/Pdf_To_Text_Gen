@@ -1,13 +1,39 @@
 import { Button } from "@mui/material";
 import axios from "axios";
 import AttachmentIcon from "@mui/icons-material/Attachment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useCounterStore } from "../../src/store";
+interface Message{
+  status: string;
+  result: string;
+}
 
 function FileUpload() {
   const [fileName, setFileName] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<Message| null>( null);
   let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+  
+  const { setStatus,setFile } = useCounterStore();
+  useEffect(() => {
+    if (message?.status === "success") {
+      setStatus("success")
+    }
+    if (message?.status === "error") {
+        setStatus("error")
+      }
+    
+  
+  }, [message]);
 
+  useEffect(() => {
+    if (fileName) { 
+      setFile?.(fileName);
+  }
+    
+  
+    }, [fileName]);
+  
+  
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -15,26 +41,32 @@ function FileUpload() {
     if (!selectedFile) return;
 
     setFileName(selectedFile.name);
-    console.log("Selected file:", fileName);
+    // console.log("Selected file:", fileName);
 
     const formData = new FormData();
     formData.append("file", selectedFile);
 
     try {
       const response = await axios.post(
-        `${VITE_BACKEND_URL}/upload_document`,
+        `${VITE_BACKEND_URL}/upload`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
         },
       );
-      setMessage("Upload successful!");
-      console.log("Upload Success:", response.data);
-      console.log(message);
+       setMessage({
+      status: response.data.status,
+      result: response.data.result 
+});
+  
+       console.log(message);
+      console.log(response.data)
     } catch (error) {
-      setMessage("Upload failed.");
+       setStatus("error")
+
       console.error("Upload Error:", error);
     }
+    
   };
 
   return (

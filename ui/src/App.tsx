@@ -3,6 +3,7 @@ import './App.css'
 import Chat from './pages/Chat'
 import Login from './pages/Login'
 import UploadDocument from './pages/UploadDocument'
+import { Toaster } from 'react-hot-toast';
 
 function App() {
 
@@ -10,12 +11,13 @@ function App() {
     <>
     <div>
       {/* <Navbar /> */}
+           <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         {/* <Route path="/home" element={<Home />} /> */}
         <Route path="/" element={<Login />} />
         {/* <Route path="/logout" element={<Logout />} /> */}
         <Route path="/upload_document" element={<UploadDocument />} />
-        <Route path="/chat" element={<Chat/>} />
+          <Route path="/chat" element={<Chat />} />
         {/* <Route path="/signup" element={<SignUp />} /> */}
       </Routes>
     </div>

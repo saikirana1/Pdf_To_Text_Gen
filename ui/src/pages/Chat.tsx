@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import FileUpload from "./FileUpload";
+import { useCounterStore } from "../../src/store";
+import { motion, AnimatePresence } from "framer-motion"; 
+import toast from 'react-hot-toast';
+
 
 interface Message {
   role: "user" | "assistant";
@@ -11,6 +15,62 @@ function Chat() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const [chatData, setChatData] = useState<Message[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+
+  const { status, file, setFile ,setStatus} = useCounterStore();
+  const [time, setTime] = useState(15);
+  
+useEffect(() => {
+    if (!file) return; // only start when file exists
+
+    let interval: ReturnType<typeof setInterval>;
+    console.log("Status:", status);
+
+    if (status !== "success") {
+      interval = setInterval(() => {
+        setTime((prev) => {
+          if (prev <= 0) {
+            return 15; // reset when reaching 0
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+   if (status === "success") {
+  setFile?.("");
+  setStatus("none");
+  setTime(15);
+  toast.success("✅ File uploaded successfully!", {
+    style: {
+      background: "#22c55e", // Tailwind green-500
+      color: "white",
+    },
+    icon: '🚀'
+  });
+}
+
+if (status === "error") {
+  setFile?.("");
+  setStatus("none");
+  setTime(15);
+  toast.error("❌ Error in file upload. Please try again.", {
+    style: {
+      background: "#dc2626", // Tailwind red-600
+      color: "white",
+    },
+    icon: '⚠️'
+  });
+}
+
+
+
+    // cleanup
+    return () => {
+      clearInterval(interval);
+    };
+  }, [file, status]); 
+
+  
+  
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -69,7 +129,7 @@ function Chat() {
       }
     };
   }, []);
-  console.log(isMobile)
+
 
   return (
 
@@ -79,7 +139,24 @@ function Chat() {
           )
        }
 
-        <div className="col-span-6 flex flex-col bg-zinc-800 p-4 rounded-lg overflow-y-auto">
+      <div className="col-span-6 flex flex-col bg-zinc-800 p-4 rounded-lg overflow-y-auto">
+       <AnimatePresence>
+  {file && (
+    <motion.div
+      key="file-upload-status"
+      initial={{ opacity: 0, y: -30, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -30, scale: 0.9 }}
+      transition={{ duration: 0.4, type: "spring" }}
+      className="bg-zinc-400 flex items-center justify-center rounded-lg mb-4 shadow-lg shadow-zinc-700"
+    >
+      <h1 className="inline-block text-zinc-900 font-semibold text-center text-lg animate-pulse">
+        Please Wait Data is preparing {time} within sec
+      </h1>
+    </motion.div>
+  )}
+</AnimatePresence>
+       
           <ul className="flex flex-col space-y-2 flex-1 mb-20">
             {chatData.map((item, index) => (
               <li
