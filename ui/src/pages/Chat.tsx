@@ -20,7 +20,7 @@ function Chat() {
   const [time, setTime] = useState(15);
   
 useEffect(() => {
-    if (!file) return; // only start when file exists
+    if (!file) return; 
 
     let interval: ReturnType<typeof setInterval>;
     console.log("Status:", status);
@@ -29,7 +29,7 @@ useEffect(() => {
       interval = setInterval(() => {
         setTime((prev) => {
           if (prev <= 0) {
-            return 15; // reset when reaching 0
+            return 15; 
           }
           return prev - 1;
         });
@@ -41,7 +41,7 @@ useEffect(() => {
   setTime(15);
   toast.success("✅ File uploaded successfully!", {
     style: {
-      background: "#22c55e", // Tailwind green-500
+      background: "#22c55e", 
       color: "white",
     },
     icon: '🚀'
@@ -54,16 +54,13 @@ if (status === "error") {
   setTime(15);
   toast.error("❌ Error in file upload. Please try again.", {
     style: {
-      background: "#dc2626", // Tailwind red-600
+      background: "#dc2626", 
       color: "white",
     },
     icon: '⚠️'
   });
 }
 
-
-
-    // cleanup
     return () => {
       clearInterval(interval);
     };
@@ -151,7 +148,7 @@ if (status === "error") {
       className="bg-zinc-400 flex items-center justify-center rounded-lg mb-4 shadow-lg shadow-zinc-700"
     >
       <h1 className="inline-block text-zinc-900 font-semibold text-center text-lg animate-pulse">
-        Please Wait Data is preparing {time} within sec
+       Preparing data... {time}s remaining
       </h1>
     </motion.div>
   )}
