@@ -105,7 +105,7 @@ or mentions names/company names to find similar transactions""",
         # print(type(query_result))
 
         print("result.final_output.query",result.final_output.query)
-        # print("query_result",query_result)
+        print("query_result", query_result)
         # print(query_result)
         #print(result.final_output.query)
         return SqlRagaent(agent=result.last_agent.name,sql_result=query_result, sql_query=result.final_output.query)
@@ -116,4 +116,3 @@ or mentions names/company names to find similar transactions""",
        
         # print("i am rag ",result.final_output)
         return SqlRagaent(agent=ra_result.get("agent"),sql_result=ra_result.get("sql_result"), sql_query=ra_result.get("sql_query"))
-    return "None , your asking quations out of the subject"

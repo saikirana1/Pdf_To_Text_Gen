@@ -6,7 +6,7 @@ from .models import SQLModel
 
 # from .un_matched_records_table import UNMATCHEDRECORDS
 
-from .models import Transaction,Account,Invoice,Item
+from .models import User
 
 
 def create_db_and_tables():

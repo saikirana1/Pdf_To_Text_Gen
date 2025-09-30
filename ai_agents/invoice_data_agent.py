@@ -22,12 +22,15 @@ def query_name(text: str) -> dict:
         results = index.search(
             namespace=table, query={"inputs": {"text": text}, "top_k": 1}
         )
+        # print("results===========>", results)
         # print(results)
         name = results["result"]["hits"][0]["fields"]["description"]
-        # print(results["result"]["hits"][0])
-        print("i am from rag--name")
-        print("name",name)
-    except (KeyError, IndexError):
+        # description = results["result"]["hits"][0]["fields"]["description"]
+        # print("i am from rag--name")
+        # print("name",name)
+        print(name, "=================================>")
+    except Exception as e:
+        print("i am error from the invoice rag agnet-=======------->", e)
         name = "No results found for this one"
     return name
 
@@ -75,7 +78,7 @@ CREATE TABLE item (
     )
     rag_agent = Agent(
         name="RAG_AGENT",
-        model='gpt-4o-mini',
+        model="gpt-4o-mini",
         instructions=(
             """You are a retrieval agent. 
         If the user asks any question that related to the ice cream name such as Tub Strawberry , Lolly Strawberryor product name then run the tools
@@ -83,7 +86,6 @@ CREATE TABLE item (
         if quation on the item name and invoice_id  then use this other wise you leave it."""
         ),
         tools=[query_name],
-        output_type=Result,
         handoff_description="""When users asks quation related to ice cream name and product name  such as Tub Strawberry , Lolly Strawberryor then run the tool
          if quation contains the product name and invoice_id then use tool call """,
         model_settings=ModelSettings(tool_choice="query_name"),
@@ -102,14 +104,23 @@ CREATE TABLE item (
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "SQL_AGENT":
         query_result = query_data(result.final_output.query)
+        print("i am query", result.final_output.query)
+        print("i am query_result", query_result)
         # print(query_result)
         return InvoiceAgent(agent=result.last_agent.name,sql_result=str(query_result), sql_query=result.final_output.query)
     elif result.last_agent.name == "RAG_AGENT":
-        print("result.final_output",result.final_output)
-        return await run_rag_agent(input_prompt,result.final_output)
-        # print("i am rag ",result.final_output)
+        print("result.final_output==========>", result.final_output)
+        print("result.final_output", result.final_output)
+        rag_result = await run_rag_agent(input_prompt, result.final_output)
+        print("rag_result===========================", rag_result)
+        ra_result = rag_result.model_dump()
 
-    return "None , your asking quations out of the subject"
+        return InvoiceAgent(
+            agent=ra_result.get("agent"),
+            sql_result=ra_result.get("sql_result"),
+            sql_query=ra_result.get("sql_query"),
+        )
+        # print("i am rag ",result.final_output)
 
 
 
