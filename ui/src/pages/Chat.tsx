@@ -1,16 +1,18 @@
+
 import { useEffect, useRef, useState } from "react";
 import FileUpload from "./FileUpload";
 import { useCounterStore } from "../../src/store";
 import { motion, AnimatePresence } from "framer-motion"; 
 import toast from 'react-hot-toast';
+import { useNavigate } from "react-router-dom";
 
 
 interface Message {
   role: "user" | "assistant";
   text: string;
 }
-
 function Chat() {
+   const navigate = useNavigate();
   const [userQuestion, setUserQuestion] = useState("");
   const eventSourceRef = useRef<EventSource | null>(null);
   const [chatData, setChatData] = useState<Message[]>([]);
@@ -18,6 +20,11 @@ function Chat() {
 
   const { status, file, setFile ,setStatus} = useCounterStore();
   const [time, setTime] = useState(15);
+
+    useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) navigate("/");
+  }, [navigate]);
   
 useEffect(() => {
     if (!file) return; 
@@ -126,6 +133,11 @@ if (status === "error") {
       }
     };
   }, []);
+   const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
 
 
   return (
@@ -138,8 +150,7 @@ if (status === "error") {
 
       <div className="col-span-6 flex flex-col bg-zinc-800 p-4 rounded-lg overflow-y-auto">
        <AnimatePresence>
-  {file && (
-    <motion.div
+          {file && (<motion.div
       key="file-upload-status"
       initial={{ opacity: 0, y: -30, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -152,7 +163,13 @@ if (status === "error") {
       </h1>
     </motion.div>
   )}
-</AnimatePresence>
+        </AnimatePresence>
+        <div className="flex flex-col h-10">
+         <button
+        onClick={handleLogout}
+        className="absolute top-4 right-4 px-2 py-2 bg-zinc-400 text-white rounded-lg hover:bg-gray-600 transition"
+          >LogOut</button>
+          </div>
        
           <ul className="flex flex-col space-y-2 flex-1 mb-20">
             {chatData.map((item, index) => (
@@ -187,7 +204,7 @@ if (status === "error") {
 
               <button
               type="submit" 
-              className="px-4 bg-zinc-500 rounded-2xl text-white hover:bg-zinc-600 transition"
+              className="px-4 bg-zinc-500 rounded-2xl text-white hover:bg-zinc-400 transition"
             >
               Ask
           </button>

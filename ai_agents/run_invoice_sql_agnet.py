@@ -72,6 +72,8 @@ CREATE TABLE item (
     if result.last_agent.name == "SQL_AGENT":
         # print("from rag sql",result.final_output.query)
         query_result = query_data(result.final_output.query)
+        print("i am query", result.final_output.query)
+        print("i am query_result", query_result)
         #print(query_data)
         # print("query_resultfdsfsf",query_result)
         # print(result.final_output.query,"result.final_output.query")

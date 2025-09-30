@@ -47,13 +47,18 @@ function FileUpload() {
     formData.append("file", selectedFile);
 
     try {
-      const response = await axios.post(
-        `${VITE_BACKEND_URL}/upload`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
+        const token = localStorage.getItem("token");
+
+    const response = await axios.post(
+      `${VITE_BACKEND_URL}/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`, // ✅ send token in header
         },
-      );
+      }
+    );
        setMessage({
       status: response.data.status,
       result: response.data.result 

@@ -49,16 +49,6 @@ async def sse_endpoint(user_question: str):
                  print("nothing to match")
 
 
-async def notify_user(email: str):
-    await asyncio.sleep(5)
-    print(f"Notification sent to {email}")
-
-@router.post("/notify/")
-async def notify(email: str, background_tasks: BackgroundTasks):
-    background_tasks.add_task(notify_user, email)
-    return {"status": "Notification will be sent soon"}
-
-
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     try:
@@ -67,7 +57,7 @@ async def upload_file(file: UploadFile = File(...)):
         _, file_extension = os.path.splitext(filename)
         with open(f"demo{file_extension}", "wb") as f:
             f.write(pdf_bytes)
-        # print("file type is", file_extension)
+        print("file type is", file_extension)
         two_pages_data = extract_pages(f"demo{file_extension}")
         agent_result = await data_decison_agent(two_pages_data)
         agent = agent_result.model_dump().get("agent")
@@ -86,6 +76,8 @@ async def upload_file(file: UploadFile = File(...)):
             data = create_pdf_embedings(f"demo{file_extension}")
             result = insert_chunks(data)
             print("extracted result is", result)
+        await asyncio.sleep(10)  # Simulate a delay for processing
+        two_pages_data = {"message": "File processed successfully"}
 
     except Exception as e:
         return {"status": "error", "result": "sd"}

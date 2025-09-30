@@ -11,7 +11,7 @@ function App() {
     <>
     <div>
       {/* <Navbar /> */}
-           <Toaster position="top-right" reverseOrder={false} />
+           <Toaster position="top-center" reverseOrder={false} />
       <Routes>
         {/* <Route path="/home" element={<Home />} /> */}
         <Route path="/" element={<Login />} />
