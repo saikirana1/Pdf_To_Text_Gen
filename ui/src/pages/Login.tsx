@@ -18,20 +18,20 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // ✅ Loading state
+  const [loading, setLoading] = useState(false); 
   const navigate = useNavigate();
-
+ let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
-    setLoading(true); // start loading
+    setLoading(true);
 
     try {
       const params = new URLSearchParams();
       params.append("username", email);
       params.append("password", password);
 
-      const response = await axios.post("http://localhost:8000/token", params, {
+      const response = await axios.post(`${VITE_BACKEND_URL}/token`, params, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
@@ -45,7 +45,7 @@ export default function Login() {
       console.error(err);
       setError("Login failed. Check email and password.");
     } finally {
-      setLoading(false); // stop loading
+      setLoading(false);
     }
   };
 
@@ -92,11 +92,11 @@ export default function Login() {
             type="submit"
             fullWidth
             variant="contained"
-            disabled={loading} // ✅ Disable while loading
+            disabled={loading} 
             sx={{ mt: 3, mb: 2, borderRadius: 2, position: "relative" }}
           >
             {loading ? (
-              <CircularProgress size={24} color="inherit" /> // ✅ Show spinner
+              <CircularProgress size={24} color="inherit" /> 
             ) : (
               "Sign In"
             )}
