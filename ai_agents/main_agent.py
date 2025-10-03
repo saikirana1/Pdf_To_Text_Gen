@@ -62,6 +62,7 @@ async def main_agent(input_prompt)->ReturnData:
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "BANK_AGENT":
         bank_account_result = await multi_agent_handoff(input_prompt)
+        print("bank_account_result=====================>", bank_account_result)
         sql_agent=bank_account_result.model_dump()
         if sql_agent.get("agent")=="SQL_AGENT":
             print("i am from bank",sql_agent)
