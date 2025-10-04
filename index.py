@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Request
+from fastapi import FastAPI, Request, Query, Depends
 from fastapi.responses import StreamingResponse
 import time
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,6 +9,7 @@ from backend_server import auth
 from fastapi.responses import JSONResponse
 from backend_server.auth import verify_token
 
+from pydantic import BaseModel
 
 app = FastAPI()
 app.add_middleware(
@@ -18,6 +19,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 @app.get("/")
 async def root():
     return {"message": "Hello from FastAPI!"}
@@ -25,6 +28,7 @@ async def root():
 
 @app.middleware("http")
 async def check_user_token(request: Request, call_next):
+    # print(request.headers)
     public_paths = [
         "/token",
         "/register",
@@ -41,7 +45,7 @@ async def check_user_token(request: Request, call_next):
 
     print("headers data", request.headers)
     auth_header = request.headers.get("Authorization")
-    print(auth_header, "auth_header")
+    # print(auth_header, "auth_header")
     if not auth_header or not auth_header.startswith("Bearer "):
         return JSONResponse(
             status_code=401, content={"detail": "Unauthorized: Missing token"}
@@ -63,6 +67,3 @@ async def check_user_token(request: Request, call_next):
 
 app.include_router(auth.router)
 app.include_router(router.router)
-
-
-

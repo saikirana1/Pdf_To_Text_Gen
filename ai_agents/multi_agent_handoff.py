@@ -104,8 +104,8 @@ or mentions names/company names to find similar transactions""",
         # print("query_result",query_result,type(query_result))
         # print(type(query_result))
 
-        print("result.final_output.query",result.final_output.query)
-        print("query_result", query_result)
+        print("result.final_output.query--------->", result.final_output.query)
+        print("query_result-------->", query_result)
         # print(query_result)
         #print(result.final_output.query)
         return SqlRagaent(agent=result.last_agent.name,sql_result=query_result, sql_query=result.final_output.query)

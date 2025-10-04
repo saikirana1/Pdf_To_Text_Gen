@@ -1,4 +1,5 @@
 from open_ai.synthesizing_data import synthesizing_data
+from open_ai.synthesizing_rag_data import synthesizing_rag_data
 from ai_agents.pdf_agent import pdf_agent
 async def event_generator(user_question,sql_query,sql_result):
                     async for chunk in synthesizing_data(user_question, sql_query, sql_result):
@@ -12,3 +13,10 @@ async def event_generator_pdf(user_prompt):
                
                      print(chunk, end="", flush=True)
                      yield f"data: {chunk}\n\n"
+
+
+async def event_generator_rag(user_question, rag_answer):
+    print(user_question, rag_answer)
+    async for chunk in synthesizing_rag_data(user_question, rag_answer):
+        print(chunk, end="", flush=True)
+        yield f"data: {chunk}\n\n"

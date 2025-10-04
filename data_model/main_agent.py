@@ -8,7 +8,7 @@ class MainAgent(BaseModel):
     parent_agent:Optional[str]=None
     child_agent:Optional[str]=None
     final_result:Optional[str]=None
-
+    rag_result: Optional[str] = None
 class InvoiceAgent(BaseModel):
     sql_query:Optional[str]=None
     sql_result:Optional[str]=None

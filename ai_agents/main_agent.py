@@ -77,7 +77,11 @@ async def main_agent(input_prompt)->ReturnData:
             print("i am from invoice",sql_agent)
             return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
         elif sql_agent.get("agent")=="RAG_AGENT":
-            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
+            return MainAgent(
+                child_agent=sql_agent.get("agent"),
+                parent_agent=result.last_agent.name,
+                rag_result=sql_agent.get("rag_result"),
+            )
     elif result.last_agent.name == "DOCUMENT_AGENT":
         # pdf_result=await pdf_agent(input_prompt)
         return MainAgent(child_agent="RAG_AGENT",parent_agent=result.last_agent.name)
