@@ -21,4 +21,4 @@ charts
 mcp_server
 json_data
 invoice-pdf
-data_model
+data_model/__pycache__

@@ -164,7 +164,7 @@ if (status === "error") {
     </motion.div>
   )}
         </AnimatePresence>
-        <div className="flex flex-col h-10">
+        <div className="flex flex-col h-15">
          <button
         onClick={handleLogout}
         className="absolute top-4 right-4 px-2 py-2 bg-zinc-400 text-white rounded-lg hover:bg-gray-600 transition"

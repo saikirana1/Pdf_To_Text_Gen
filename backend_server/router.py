@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta, timezone
 from ai_agents.main_agent import main_agent
 from fastapi.responses import StreamingResponse
-from .event_generator import event_generator,event_generator_pdf
+from .event_generator import event_generator, event_generator_pdf, event_generator_rag
 from open_ai.synthesizing_data import synthesizing_data
 from ai_agents.data_decison_agent import data_decison_agent
 from clean_pdf_data.extract_pages import extract_pages
@@ -21,6 +21,7 @@ import os
 from open_ai.invoice_pdf_to_json import invoice_pdf_json
 from open_ai.create_pdf_embedings import create_pdf_embedings
 from pinecone_v_db.insert_chunks import insert_chunks
+
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 router = APIRouter()
@@ -37,10 +38,20 @@ async def sse_endpoint(user_question: str):
               elif main_agent_data.get("child_agent")=="RAG_AGENT":
                    return StreamingResponse(event_generator(user_question, main_agent_data.get("sql_query"), main_agent_data.get("sql_result")), media_type="text/event-stream") 
             if parent_agent=="INVOICE_AGENT":
-                 if main_agent_data.get("child_agent")=="SQL_AGENT":
-                     return StreamingResponse(event_generator(user_question, main_agent_data.get("sql_query"), main_agent_data.get("sql_result")), media_type="text/event-stream")
-                 elif main_agent_data.get("child_agent")=="RAG_AGENT":
-                     return StreamingResponse(event_generator(user_question, main_agent_data.get("sql_query"), main_agent_data.get("sql_result")), media_type="text/event-stream")
+                if main_agent_data.get("child_agent") == "SQL_AGENT":
+                    return StreamingResponse(
+                        event_generator(
+                            user_question,
+                            main_agent_data.get("sql_query"),
+                            main_agent_data.get("sql_result"),
+                        ),
+                        media_type="text/event-stream",
+                    )
+                elif main_agent_data.get("child_agent") == "RAG_AGENT":
+                    return StreamingResponse(
+                        event_generator_rag(user_question),
+                        media_type="text/event-stream",
+                    )
             if parent_agent=="DOCUMENT_AGENT":
                  print("i am document from the parent")
                  print("i am from rag router pdf")
@@ -71,7 +82,7 @@ async def upload_file(file: UploadFile = File(...)):
         elif agent == "INVOICE_AGENT":
             print("i am in invoice agent elif===========>")
             result = invoice_pdf_json(f"demo{file_extension}")
-            print("extracted result is", result)
+            # print("extracted result is", result)
         elif agent == "NORMAL_DATA_AGENT":
             data = create_pdf_embedings(f"demo{file_extension}")
             result = insert_chunks(data)

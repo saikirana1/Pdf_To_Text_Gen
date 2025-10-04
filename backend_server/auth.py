@@ -68,13 +68,14 @@ def get_user_by_email(email: str):
         return result
 
 
-@router.post("/register", response_model=UserResponseModel)
+@router.post("/register")
 def register_user(user: UserModel):
     db_user = get_user_by_email(user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    return create_user(user)
 
+    create_user(user)
+    return {"message": "successfully created"}
 
 def authenticate_user(email: EmailStr, password: str):
     with get_db_session() as session:

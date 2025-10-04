@@ -62,6 +62,7 @@ async def main_agent(input_prompt)->ReturnData:
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "BANK_AGENT":
         bank_account_result = await multi_agent_handoff(input_prompt)
+        print("bank_account_result=====================>", bank_account_result)
         sql_agent=bank_account_result.model_dump()
         if sql_agent.get("agent")=="SQL_AGENT":
             print("i am from bank",sql_agent)
@@ -76,7 +77,10 @@ async def main_agent(input_prompt)->ReturnData:
             print("i am from invoice",sql_agent)
             return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
         elif sql_agent.get("agent")=="RAG_AGENT":
-            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
+            return MainAgent(
+                child_agent=sql_agent.get("agent"),
+                parent_agent=result.last_agent.name,
+            )
     elif result.last_agent.name == "DOCUMENT_AGENT":
         # pdf_result=await pdf_agent(input_prompt)
         return MainAgent(child_agent="RAG_AGENT",parent_agent=result.last_agent.name)

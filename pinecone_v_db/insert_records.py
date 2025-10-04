@@ -17,4 +17,3 @@ def insert_records(data):
         print("Upserted into Pinecone:", record)
 
     print("All items upserted successfully!")
-    return True
