@@ -1,5 +1,5 @@
 from open_ai.synthesizing_data import synthesizing_data
-from open_ai.synthesizing_rag_data import synthesizing_rag_data
+from open_ai.invoice_rag_result import invoice_rag_result
 from ai_agents.pdf_agent import pdf_agent
 async def event_generator(user_question,sql_query,sql_result):
                     async for chunk in synthesizing_data(user_question, sql_query, sql_result):
@@ -15,8 +15,8 @@ async def event_generator_pdf(user_prompt):
                      yield f"data: {chunk}\n\n"
 
 
-async def event_generator_rag(user_question, rag_answer):
-    print(user_question, rag_answer)
-    async for chunk in synthesizing_rag_data(user_question, rag_answer):
+async def event_generator_rag(user_question):
+    print(user_question)
+    async for chunk in invoice_rag_result(user_question):
         print(chunk, end="", flush=True)
         yield f"data: {chunk}\n\n"

@@ -49,10 +49,7 @@ async def sse_endpoint(user_question: str):
                     )
                 elif main_agent_data.get("child_agent") == "RAG_AGENT":
                     return StreamingResponse(
-                        event_generator_rag(
-                            user_question,
-                            main_agent_data.get("rag_result"),
-                        ),
+                        event_generator_rag(user_question),
                         media_type="text/event-stream",
                     )
             if parent_agent=="DOCUMENT_AGENT":

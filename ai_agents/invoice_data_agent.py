@@ -11,28 +11,6 @@ from data_model.invoice_data_agent import InvoiceAgent
 load_dotenv()
 
 
-@function_tool
-def query_name(text: str) -> dict:
-    
-    try:
-        db, table = get_db_table()
-        table="ice_cream_name"
-        pc = pinecone_cli()
-        index = pc.Index(db)
-        results = index.search(
-            namespace=table, query={"inputs": {"text": text}, "top_k": 1}
-        )
-        # print("results===========>", results)
-        # # print(results)
-        # name = results["result"]["hits"][0]["fields"]["description"]
-        # # description = results["result"]["hits"][0]["fields"]["description"]
-        # # print("i am from rag--name")
-        # # print("name",name)
-        # print(name, "=================================>")
-    except Exception as e:
-        print("i am error from the invoice rag agnet-=======------->", e)
-        name = "No results found for this one"
-    return results
 
 
 class Result(BaseModel):
@@ -124,11 +102,9 @@ CREATE TABLE customer (
         Do not answer directly. Always run the tool and return its output as the answer.
         if quation on the item name and invoice_id  then use this other wise you leave it."""
         ),
-        tools=[query_name],
         handoff_description="""When users asks quation related to ice cream name and product name  such as Tub Strawberry , Lolly Strawberryor then run the tool
          if quation contains the product name and invoice_id then use tool call """,
-        model_settings=ModelSettings(tool_choice="query_name"),
-        tool_use_behavior="run_llm_again",
+        tool_use_behavior="stop_on_first_tool",
     )
 
     allocator_agent = Agent(
@@ -152,7 +128,5 @@ CREATE TABLE customer (
         # rag_result = await run_rag_agent(input_prompt, result.final_output)
         # print("rag_result===========================", rag_result)
         # ra_result = rag_result.model_dump()
-        return InvoiceAgent(
-            agent=result.last_agent.name, rag_result=result.final_output
-        )
+        return InvoiceAgent(agent=result.last_agent.name)
         # print("i am rag ",result.final_output)

@@ -80,7 +80,6 @@ async def main_agent(input_prompt)->ReturnData:
             return MainAgent(
                 child_agent=sql_agent.get("agent"),
                 parent_agent=result.last_agent.name,
-                rag_result=sql_agent.get("rag_result"),
             )
     elif result.last_agent.name == "DOCUMENT_AGENT":
         # pdf_result=await pdf_agent(input_prompt)
