@@ -17,4 +17,3 @@ def insert_chunks(chunks):
         print("Upserted into Pinecone:", record)
 
     print("All items upserted successfully!")
-    return True
