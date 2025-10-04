@@ -10,8 +10,7 @@ def get_db_session():
     yield from get_session()
 
 
-def insert_data(data ):
-    pine_data=insert_records(data)
+def insert_data(data):
     with get_db_session() as session:
 
         #data={'account': [{'account_number': '2189050000480', 'ifsc_code': 'PUNB0218920', 'name': 'HARVISH AGRIGENICS PRIVATE LIMITED'}], 'transactions': [{'transaction_id': None, 'transaction_date': '2025-03-30', 'withdrawal': None, 'deposit': None, 'balance': None, 'description': 'NRTGS/ICICR42025033000500805/HARVISH AGRIGENICS PV', 'check_number': None}, {'transaction_id': None, 'transaction_date': '2025-03-26', 'withdrawal': 4407.83, 'deposit': None, 'balance': None, 'description': 'Loan Recovery For -218920NG00000984', 'check_number': None}, {'transaction_id': None, 'transaction_date': '2025-03-24', 'withdrawal': None, 'deposit': None, 'balance': None, 'description': 'NEFT_IN:null//ICICN52025032400471241/SALASAR TRADING COMPANY', 'check_number': None}, {'transaction_id': None, 'transaction_date': '2025-03-20', 'withdrawal': None, 'deposit': None, 'balance': None, 'description': 'From:XXXX0029:STARCHIK FOODS PRIVATE LIMIT', 'check_number': None}, {'transaction_id': None, 'transaction_date': '2025-03-14', 'withdrawal': 29.5, 'deposit': None, 'balance': None, 'description': 'ATM ANN.CHRG FOR CARD-6615 YEAR ENDED 2024-25', 'check_number': None}, {'transaction_id': None, 'transaction_date': '2025-03-10', 'withdrawal': None, 'deposit': 44841.5, 'balance': None, 'description': 'NEFT_OUT:PUNBN62025031050143025/HarvishCurr/SBIN0004266/SPDCLPRJN2164', 'check_number': None}, {'transaction_id': None, 'transaction_date': '2025-03-07', 'withdrawal': None, 'deposit': None, 'balance': None, 'description': 'From:XXXX0029:STARCHIK FOODS PRIVATE LIMIT', 'check_number': None}, {'transaction_id': None, 'transaction_date': '2025-03-06', 'withdrawal': 7500.0, 'deposit': None, 'balance': None, 'description': 'IMPS\ufffeOUT/506522290604/ICIC0000245/024505005757', 'check_number': None}]}
@@ -59,6 +58,9 @@ def insert_data(data ):
 
             session.add(transaction)
 
+
         session.commit()
+    pine_data = insert_records(data)
+    return pine_data
 
         
