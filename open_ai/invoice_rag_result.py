@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import asyncio
 from openai.types.responses import ResponseTextDeltaEvent
-from agents import Agent, Runner
+from agents import Agent, Runner, SQLiteSession
 
 load_dotenv()
 
@@ -35,7 +35,7 @@ def query_invoice(text: str) -> dict:
         results = "No results found for this one"
     return results
 
-
+session = SQLiteSession("user_123")
 async def invoice_rag_result(input_prompt):
     rag_agent = Agent(
         name="RAG_AGENT",
@@ -62,7 +62,7 @@ async def invoice_rag_result(input_prompt):
         tool_use_behavior="stop_on_first_tool",
     )
 
-    result = Runner.run_streamed(allocator_agent, input_prompt)
+    result = Runner.run_streamed(allocator_agent, input_prompt, session=session)
 
     print("Active Agent:", result.last_agent.name)
 

@@ -120,6 +120,7 @@ if (status === "error") {
       });
       console.log("Received:", event.data);
     };
+      setUserQuestion("")
 
     eventSource.onerror = (err) => {
       console.error("SSE error:", err);

@@ -2,12 +2,12 @@ from agents import Runner
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
-from agents import Agent
+from agents import Agent, SQLiteSession
 import asyncio
 from openai.types.responses import ResponseTextDeltaEvent
 load_dotenv()
  
-
+session = SQLiteSession("user_123")
 async def synthesizing_data(question, sql_command, final_result):
     synthesize_data = Agent(
         name="Synthesize Data",
@@ -29,8 +29,10 @@ async def synthesizing_data(question, sql_command, final_result):
     )
 
     result = Runner.run_streamed(
-            allocator_agent, "Generate the best sentence that the user will understand."
-        )
+        allocator_agent,
+        "Generate the best sentence that the user will understand.",
+        session=session,
+    )
     async for event in result.stream_events():
         if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
             # print("se",event.data.delta)

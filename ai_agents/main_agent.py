@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from agents import Runner, Agent, function_tool, ModelSettings
+from agents import Runner, Agent, function_tool, ModelSettings, SQLiteSession
 import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -20,7 +20,7 @@ class Result(BaseModel):
 
 class Query(BaseModel):
     query: str
-
+session = SQLiteSession("user_123")
 
 async def main_agent(input_prompt)->ReturnData:
     bank_agent = Agent(
@@ -57,7 +57,7 @@ async def main_agent(input_prompt)->ReturnData:
         handoffs=[bank_agent, invoice_agent,document_agent],
     )
 
-    result = await Runner.run(allocator_agent, input_prompt)
+    result = await Runner.run(allocator_agent, input_prompt, session=session)
 
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "BANK_AGENT":
@@ -72,6 +72,7 @@ async def main_agent(input_prompt)->ReturnData:
     
     elif result.last_agent.name == "INVOICE_AGENT":
         invoice_result = await invoice_data_agent(input_prompt)
+        print("invoice_result============>", invoice_result)
         sql_agent=invoice_result.model_dump()
         if sql_agent.get("agent")=="SQL_AGENT":
             print("i am from invoice",sql_agent)

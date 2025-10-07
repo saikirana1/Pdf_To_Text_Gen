@@ -17,7 +17,6 @@ function VoiceButton({ onTranscribe,onMicClick }:VoiceButtonProps) {
   useEffect(() => {
     if (onTranscribe && interimResult) {
       onTranscribe(interimResult);
-      console.log("i am useeefet")
     }
   }, [interimResult, onTranscribe]);
 

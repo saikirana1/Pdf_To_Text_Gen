@@ -103,7 +103,8 @@ CREATE TABLE customer (
         if quation on the item name and invoice_id  then use this other wise you leave it."""
         ),
         handoff_description="""When users asks quation related to ice cream name and product name  such as Tub Strawberry , Lolly Strawberryor then run the tool
-         if quation contains the product name and invoice_id then use tool call """,
+         if quation contains the product name and invoice_id then use tool call 
+         if quation related summery of invoice use this one """,
         tool_use_behavior="stop_on_first_tool",
     )
 
