@@ -41,7 +41,7 @@ function FileUpload() {
     if (!selectedFile) return;
 
     setFileName(selectedFile.name);
-    // console.log("Selected file:", fileName);
+    
 
     const formData = new FormData();
     formData.append("file", selectedFile);
