@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import  { useEffect } from "react";
 import IconButton from "@mui/material/IconButton";
 import MicIcon from "@mui/icons-material/Mic";
 import useSpeechToText from "react-hook-speech-to-text";
