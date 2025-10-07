@@ -8,10 +8,10 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import asyncio
 from openai.types.responses import ResponseTextDeltaEvent
-from agents import Agent, Runner
+from agents import Agent, Runner, SQLiteSession
 load_dotenv()
 
-
+session = SQLiteSession("user_123")
 @function_tool
 def query_chunk(text: str) -> dict:
     
@@ -67,7 +67,7 @@ Answer the question based on the above context: """,
 
     )
 
-    result = Runner.run_streamed(allocator_agent, input_prompt)
+    result = Runner.run_streamed(allocator_agent, input_prompt, session=session)
 
     print("Active Agent:", result.last_agent.name)
    
