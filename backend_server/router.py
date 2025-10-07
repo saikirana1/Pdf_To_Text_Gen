@@ -39,6 +39,12 @@ async def sse_endpoint(user_question: str):
                    return StreamingResponse(event_generator(user_question, main_agent_data.get("sql_query"), main_agent_data.get("sql_result")), media_type="text/event-stream") 
             if parent_agent=="INVOICE_AGENT":
                 if main_agent_data.get("child_agent") == "SQL_AGENT":
+                    print(
+                        user_question,
+                        main_agent_data.get("sql_query"),
+                        main_agent_data.get("sql_result"),
+                        "===========>from router input",
+                    )
                     return StreamingResponse(
                         event_generator(
                             user_question,
