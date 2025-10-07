@@ -55,7 +55,7 @@ function FileUpload() {
       {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`, // ✅ send token in header
+          Authorization: `Bearer ${token}`, 
         },
       }
     );

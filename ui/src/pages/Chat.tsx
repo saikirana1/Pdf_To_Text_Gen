@@ -1,10 +1,10 @@
-
 import { useEffect, useRef, useState } from "react";
 import FileUpload from "./FileUpload";
 import { useCounterStore } from "../../src/store";
 import { motion, AnimatePresence } from "framer-motion"; 
 import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
+import VoiceButton from "./VoiceButton";
 
 
 interface Message {
@@ -87,7 +87,51 @@ if (status === "error") {
   }, []);
   
   let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+ const handleMicClick = (isRecording:any) => {
+    if (isRecording) {
+      console.log("🎤 Stopping recording...");
+      
+    }if(isRecording && userQuestion){
+      console.log("🎙️ call api");
+    if (!userQuestion.trim()) return;
+    setChatData((prev) => [...prev, { role: "user", text: userQuestion }]);
+    console.log(userQuestion);
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+    
+    const encodedQuestion = encodeURIComponent(userQuestion);
+    const eventSource = new EventSource(
+      `${VITE_BACKEND_URL}/get_response?user_question=${encodedQuestion}`
+    );
+
+    eventSource.onopen = () => {
+      setChatData(prev => [...prev, { role: "assistant", text: "" }])
+    }
+
+    eventSource.onmessage = (event) => {
+      setChatData((prev) => {
+        const last = prev[prev.length - 1] || {};
+        const head = prev.slice(0, prev.length - 1);
+        return [
+          ...head,
+          { ...last, text: last.text + event.data }
+        ]
+      });
+      console.log("Received:", event.data);
+    };
+
+    eventSource.onerror = (err) => {
+      console.error("SSE error:", err);
+      eventSource.close();
+    };
+
+    eventSourceRef.current = eventSource;
+    setUserQuestion("");
+    }
+  };
   const handle_onclick = () => {
+
     if (!userQuestion.trim()) return;
     setChatData((prev) => [...prev, { role: "user", text: userQuestion }]);
     console.log(userQuestion);
@@ -137,9 +181,6 @@ if (status === "error") {
     localStorage.removeItem("token");
     navigate("/");
   };
-
-
-
   return (
 
    <div className = "grid md:grid-cols-12 h-screen md:bg-zinc-900 bg-zinc-800" >
@@ -212,8 +253,12 @@ if (status === "error") {
             (
               <FileUpload />
             )
-         }
+              
+            }
+              
+            <VoiceButton onMicClick={handleMicClick} onTranscribe={(text: any) => setUserQuestion(text)} />
             
+             
             </form>
           </div>
         </div>
