@@ -3,6 +3,7 @@ from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import date
 
+
 class User(SQLModel, table=True):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     email: str = Field(index=True, unique=True)
@@ -11,7 +12,9 @@ class User(SQLModel, table=True):
 
 class Account(SQLModel, table=True):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
-    account_number: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), index=True, unique=True)
+    account_number: Optional[str] = Field(
+        default_factory=lambda: str(uuid.uuid4()), index=True, unique=True
+    )
     ifsc_code: Optional[str] = Field(default=None, index=True)
     name: Optional[str] = Field(default=None, index=True)
 
@@ -28,7 +31,7 @@ class Transaction(SQLModel, table=True):
     description: Optional[str] = Field(default=None, index=True)
     check_number: Optional[str] = Field(default=None, index=True)
 
-    account_number: str = Field(foreign_key="account.account_number")  
+    account_number: str = Field(foreign_key="account.account_number")
     account: Optional[Account] = Relationship(back_populates="transactions")
 
 
