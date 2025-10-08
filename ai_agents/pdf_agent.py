@@ -11,7 +11,7 @@ from openai.types.responses import ResponseTextDeltaEvent
 from agents import Agent, Runner, SQLiteSession
 load_dotenv()
 
-session = SQLiteSession("user_123")
+session = SQLiteSession("simple@gmail.com", "conversation_history.db")
 @function_tool
 def query_chunk(text: str) -> dict:
     

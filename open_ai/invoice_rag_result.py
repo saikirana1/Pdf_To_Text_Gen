@@ -35,7 +35,7 @@ def query_invoice(text: str) -> dict:
         results = "No results found for this one"
     return results
 
-session = SQLiteSession("user_123")
+session = SQLiteSession("simple@gmail.com", "conversation_history.db")
 async def invoice_rag_result(input_prompt):
     rag_agent = Agent(
         name="RAG_AGENT",
