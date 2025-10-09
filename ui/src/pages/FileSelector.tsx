@@ -1,26 +1,35 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
-
-
-interface FileButtonProps {
-  onSelectionChange?: (text: string) => void; 
-  onMicClick?: (isRecording: boolean) => void; 
+interface File {
+  id: string;
+  file_name: string;
+  file_url: string;
 }
 
-const FileSelector = ({ onSelectionChange }:FileButtonProps) => {
-  const [files, setFiles] = useState([]);
-  const [selectedFiles, setSelectedFiles] = useState<any>({});
-  let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // {id: file}
+interface FileButtonProps {
+  onSelectionChange?: (urls: string[]) => void;
+}
 
-  // Fetch all files from backend
+const FileSelector = ({ onSelectionChange }: FileButtonProps) => {
+  const [files, setFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File }>({});
+  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL ;
+
   useEffect(() => {
-    fetchFiles();
+    const fetchData = async () => {
+      await fetchFiles();
+    };
+    fetchData();
   }, []);
 
   const fetchFiles = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No auth token found");
+        return;
+      }
       const res = await axios.get(`${VITE_BACKEND_URL}/files`, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -33,8 +42,8 @@ const FileSelector = ({ onSelectionChange }:FileButtonProps) => {
     }
   };
 
-  const handleCheckboxChange = (file: any) => {
-    const updated:any = { ...selectedFiles };
+  const handleCheckboxChange = (file: File) => {
+    const updated = { ...selectedFiles };
     if (updated[file.id]) {
       delete updated[file.id];
     } else {
@@ -42,9 +51,8 @@ const FileSelector = ({ onSelectionChange }:FileButtonProps) => {
     }
     setSelectedFiles(updated);
 
-    // Send selected URLs to parent component or anywhere
     if (onSelectionChange) {
-      const urls:any = Object.values(updated).map((f:any) => f.file_url);
+      const urls = Object.values(updated).map(f => f.file_url);
       onSelectionChange(urls);
     }
   };
@@ -53,7 +61,7 @@ const FileSelector = ({ onSelectionChange }:FileButtonProps) => {
     <div style={{ padding: "20px", maxWidth: "600px" }}>
       <h2>Select Files</h2>
       <ul>
-        {files.map((file:any) => (
+        {files.map(file => (
           <li key={file.id}>
             <input
               type="checkbox"
@@ -66,11 +74,11 @@ const FileSelector = ({ onSelectionChange }:FileButtonProps) => {
       </ul>
 
       <h3>Selected URLs:</h3>
-      {/* <ul>
-        {Object.values(selectedFiles).map((f) => (
+      <ul>
+        {Object.values(selectedFiles).map(f => (
           <li key={f.id}>{f.file_url}</li>
         ))}
-      </ul> */}
+      </ul>
     </div>
   );
 };
