@@ -10,10 +10,15 @@ import asyncio
 from openai.types.responses import ResponseTextDeltaEvent
 from agents import Agent, Runner, SQLiteSession
 
+from dotenv import load_dotenv
+import os
+
+
 load_dotenv()
+session_db_name = os.getenv("session_db_name")
+session_con_user = os.getenv("session_con_user")
 
-
-session = SQLiteSession("simple@gmail.com", "conversation_history.db")
+session = SQLiteSession("session_con_user", "session_db_name1.db")
 
 
 async def file_data_synthesis(input_question, urls):
@@ -50,7 +55,8 @@ async def file_data_synthesis(input_question, urls):
     }
 
     result = Runner.run_streamed(
-        allocator_agent, input=[input_message], session=session
+        allocator_agent,
+        input=[input_message],
     )
 
     print("Active Agent:", result.last_agent.name)

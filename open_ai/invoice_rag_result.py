@@ -9,8 +9,15 @@ from openai import OpenAI
 import asyncio
 from openai.types.responses import ResponseTextDeltaEvent
 from agents import Agent, Runner, SQLiteSession
+from dotenv import load_dotenv
+import os
+
 
 load_dotenv()
+session_db_name = os.getenv("session_db_name")
+session_con_user = os.getenv("session_con_user")
+
+session = SQLiteSession(session_con_user, session_db_name)
 
 
 @function_tool
@@ -35,7 +42,7 @@ def query_invoice(text: str) -> dict:
         results = "No results found for this one"
     return results
 
-session = SQLiteSession("simple@gmail.com", "conversation_history.db")
+
 async def invoice_rag_result(input_prompt):
     rag_agent = Agent(
         name="RAG_AGENT",

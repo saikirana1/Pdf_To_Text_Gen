@@ -6,7 +6,12 @@ import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
 from data_model.invoice_data_agent import InvoiceAgent
+from dotenv import load_dotenv
+import os
+
+
 load_dotenv()
+
 
 class Result(BaseModel):
     answer: str
