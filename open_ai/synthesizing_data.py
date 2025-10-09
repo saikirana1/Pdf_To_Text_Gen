@@ -5,9 +5,15 @@ from dotenv import load_dotenv
 from agents import Agent, SQLiteSession
 import asyncio
 from openai.types.responses import ResponseTextDeltaEvent
+from dotenv import load_dotenv
+import os
+
+
 load_dotenv()
- 
-session = SQLiteSession("simple@gmail.com", "conversation_history.db")
+session_db_name = os.getenv("session_db_name")
+session_con_user = os.getenv("session_con_user")
+
+session = SQLiteSession(session_con_user, session_db_name)
 async def synthesizing_data(question, sql_command, final_result):
     print(question)
     print(sql_command)

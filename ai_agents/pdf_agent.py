@@ -9,9 +9,15 @@ from openai import OpenAI
 import asyncio
 from openai.types.responses import ResponseTextDeltaEvent
 from agents import Agent, Runner, SQLiteSession
-load_dotenv()
+from dotenv import load_dotenv
+import os
 
-session = SQLiteSession("simple@gmail.com", "conversation_history.db")
+
+load_dotenv()
+session_db_name = os.getenv("session_db_name")
+session_con_user = os.getenv("session_con_user")
+
+session = SQLiteSession(session_con_user, session_db_name)
 @function_tool
 def query_chunk(text: str) -> dict:
     
@@ -25,7 +31,8 @@ def query_chunk(text: str) -> dict:
         )
        
         pdf_content = results["result"]["hits"][0]["fields"]["page_content"]
-        print("i am pdf rag content")
+        print("i am pdf rag content===========>")
+        print(pdf_content)
         # print(results)
        
     except Exception as e:

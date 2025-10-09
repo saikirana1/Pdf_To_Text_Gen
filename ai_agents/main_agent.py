@@ -11,7 +11,15 @@ from .multi_agent_handoff import multi_agent_handoff
 from open_ai.synthesizing_data import synthesizing_data
 from typing import Optional,List,Tuple
 from data_model.main_agent import DocumentAGENT,InvoiceAgent,ReturnData,MainAgent
+from dotenv import load_dotenv
+import os
+
+
 load_dotenv()
+session_db_name = os.getenv("session_db_name")
+session_con_user = os.getenv("session_con_user")
+
+session = SQLiteSession(session_con_user, session_db_name)
 
 
 class Result(BaseModel):
@@ -20,7 +28,7 @@ class Result(BaseModel):
 
 class Query(BaseModel):
     query: str
-session = SQLiteSession("user_123")
+
 
 async def main_agent(input_prompt)->ReturnData:
     bank_agent = Agent(

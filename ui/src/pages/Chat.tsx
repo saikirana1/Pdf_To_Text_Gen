@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 import VoiceButton from "./VoiceButton";
+import FileSelector from "./FileSelector";
 
 
 interface Message {
@@ -12,26 +13,28 @@ interface Message {
   text: string;
 }
 function Chat() {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [userQuestion, setUserQuestion] = useState("");
   const eventSourceRef = useRef<EventSource | null>(null);
   const [chatData, setChatData] = useState<Message[]>([]);
   const [isMobile, setIsMobile] = useState(false);
-
+  const [enurls, setEnurls] = useState("")
+  const [endpoint,setEndpoint]=useState("")
+  
   const { status, file, setFile ,setStatus} = useCounterStore();
   const [time, setTime] = useState(15);
-
-    useEffect(() => {
+  
+  useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) navigate("/");
   }, [navigate]);
   
-useEffect(() => {
+  useEffect(() => {
     if (!file) return; 
-
+    
     let interval: ReturnType<typeof setInterval>;
     console.log("Status:", status);
-
+    
     if (status !== "success") {
       interval = setInterval(() => {
         setTime((prev) => {
@@ -42,95 +45,128 @@ useEffect(() => {
         });
       }, 1000);
     }
-   if (status === "success") {
-  setFile?.("");
-  setStatus("none");
-  setTime(15);
-  toast.success("✅ File uploaded successfully!", {
-    style: {
-      background: "#22c55e", 
-      color: "white",
-    },
-    icon: '🚀'
-  });
-}
-
-if (status === "error") {
-  setFile?.("");
-  setStatus("none");
-  setTime(15);
-  toast.error("❌ Error in file upload. Please try again.", {
-    style: {
-      background: "#dc2626", 
-      color: "white",
-    },
-    icon: '⚠️'
-  });
-}
-
+    if (status === "success") {
+      setFile?.("");
+      setStatus("none");
+      setTime(15);
+      toast.success("✅ File uploaded successfully!", {
+        style: {
+          background: "#22c55e", 
+          color: "white",
+        },
+        icon: '🚀'
+      });
+    }
+    
+    if (status === "error") {
+      setFile?.("");
+      setStatus("none");
+      setTime(15);
+      toast.error("❌ Error in file upload. Please try again.", {
+        style: {
+          background: "#dc2626", 
+          color: "white",
+        },
+        icon: '⚠️'
+      });
+    }
+    
     return () => {
       clearInterval(interval);
     };
   }, [file, status]); 
-
+  
   
   
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
+    
     handleResize();
     window.addEventListener("resize", handleResize);
-
+    
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+useEffect(() => {
+  try {
+    const decodedUrls = decodeURIComponent(enurls || "%5B%5D"); // safely decode
+    const parsedUrls = JSON.parse(decodedUrls); // parse the JSON string
+
+    if (Array.isArray(parsedUrls) && parsedUrls.length > 0) {
+      setEndpoint("get_file_data");
+    } else {
+      setEndpoint("get_response");
+    }
+  } catch (error) {
+    console.warn("Error decoding URLs:", error);
+    setEndpoint("get_response");
+  }
+}, [enurls]);
+
+useEffect(() => {
+  console.log(endpoint, "✅ current endpoint");
+  console.log(typeof enurls, "🔍 type of enurls");
+  console.log(enurls, "📁 encoded file URLs");
+}, [endpoint, enurls]);
+
+
   
   let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
- const handleMicClick = (isRecording:any) => {
+  const handleMicClick = (isRecording:any) => {
     if (isRecording) {
       console.log("🎤 Stopping recording...");
       
     }if(isRecording && userQuestion){
       console.log("🎙️ call api");
-    if (!userQuestion.trim()) return;
-    setChatData((prev) => [...prev, { role: "user", text: userQuestion }]);
-    console.log(userQuestion);
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-    }
-    
-    const encodedQuestion = encodeURIComponent(userQuestion);
-    const eventSource = new EventSource(
-      `${VITE_BACKEND_URL}/get_response?user_question=${encodedQuestion}`
-    );
-
-    eventSource.onopen = () => {
-      setChatData(prev => [...prev, { role: "assistant", text: "" }])
-    }
-
-    eventSource.onmessage = (event) => {
-      setChatData((prev) => {
-        const last = prev[prev.length - 1] || {};
-        const head = prev.slice(0, prev.length - 1);
-        return [
-          ...head,
-          { ...last, text: last.text + event.data }
-        ]
-      });
-      console.log("Received:", event.data);
-    };
+      if (!userQuestion.trim()) return;
+      setChatData((prev) => [...prev, { role: "user", text: userQuestion }]);
+      console.log(userQuestion);
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+      
+      const encodedQuestion = encodeURIComponent(userQuestion);
+      const eventSource = new EventSource(
+        `${VITE_BACKEND_URL}/get_response?user_question=${encodedQuestion}`
+      );
+      
+      eventSource.onopen = () => {
+        setChatData(prev => [...prev, { role: "assistant", text: "" }])
+      }
+      
+      eventSource.onmessage = (event) => {
+        setChatData((prev) => {
+          const last = prev[prev.length - 1] || {};
+          const head = prev.slice(0, prev.length - 1);
+          return [
+            ...head,
+            { ...last, text: last.text + event.data }
+          ]
+        });
+        console.log("Received:", event.data);
+      };
       setUserQuestion("")
-
-    eventSource.onerror = (err) => {
-      console.error("SSE error:", err);
-      eventSource.close();
-    };
-
-    eventSourceRef.current = eventSource;
-    setUserQuestion("");
+      
+      eventSource.onerror = (err) => {
+        console.error("SSE error:", err);
+        eventSource.close();
+      };
+     
+      
+      eventSourceRef.current = eventSource;
+      setUserQuestion("");
     }
   };
+  const handleSelectedUrls = (urls:any) => {
+    // console.log("Selected file URLs for OpenAI:", urls);
+    const encodedUrls = encodeURIComponent(JSON.stringify(urls));
+    setEnurls(encodedUrls)
+    
+  };
+
+  console.log(enurls)
   const handle_onclick = () => {
 
     if (!userQuestion.trim()) return;
@@ -142,7 +178,9 @@ if (status === "error") {
     
     const encodedQuestion = encodeURIComponent(userQuestion);
     const eventSource = new EventSource(
-      `${VITE_BACKEND_URL}/get_response?user_question=${encodedQuestion}`
+      `${VITE_BACKEND_URL}/${endpoint}?user_question=${encodedQuestion}&urls=${enurls}`, {
+        
+      }
     );
 
     eventSource.onopen = () => {
@@ -181,12 +219,14 @@ if (status === "error") {
    const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
-  };
+   };
   return (
 
    <div className = "grid md:grid-cols-12 h-screen md:bg-zinc-900 bg-zinc-800" >
     {!isMobile && (
-      <div className="col-span-3 flex items-center justify-center text-white"></div>
+        <div className="col-span-3 flex items-center justify-center text-white">
+          <FileSelector onSelectionChange={handleSelectedUrls} />
+      </div>
           )
        }
 
@@ -201,7 +241,7 @@ if (status === "error") {
       className="bg-zinc-400 flex items-center justify-center rounded-lg mb-4 shadow-lg shadow-zinc-700"
     >
       <h1 className="inline-block text-zinc-900 font-semibold text-center text-lg animate-pulse">
-       Preparing data... {time}s remaining
+       Preparing data... 
       </h1>
     </motion.div>
   )}
