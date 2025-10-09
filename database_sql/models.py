@@ -108,3 +108,10 @@ class Customer(SQLModel, table=True):
     address: Optional[str] = Field(default=None, index=True)
     gst_number: Optional[str] = Field(default=None, index=True)
     invoice: Invoice = Relationship(back_populates="customers")
+
+
+class FileData(SQLModel, table=True):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    file_name: str = Field(default=None, index=True)
+    file_url: Optional[str] = Field(default=None, index=True)
+    file_index: Optional[str] = Field(default=None, index=True)

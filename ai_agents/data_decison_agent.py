@@ -44,13 +44,20 @@ async def data_decison_agent(input_prompt: str):
         name="NORMAL_DATA_AGENT",
         model="gpt-4o-mini",
         instructions="""
-        You are an expert at identifying general paragraph-type data
-        that is not related to transactions or invoices.
+        You are an expert at identifying and extracting structured and semi-structured information 
+    from documents. This includes:
+    - Banking transaction forms (loans, financing)
+    - Investment and risk assessment questionnaires
+    - General document information (names, dates, IDs, amounts, financial terms)
+    -  paragraphs, and key details
+    Your task is to parse the document, identify the type of data, and extract key details accurately.
         """,
         output_type=Result,
         handoff_description="""
-        Use this agent if the data is a general paragraph or topic 
-        that does not involve invoices or transactions.
+      Use this agent for any document that contains structured, semi-structured, 
+    or general financial/administrative information. It can handle transaction forms, 
+    investment profiles, questionnaires, and general paragraphs. 
+    
         """,
         tool_use_behavior="stop_on_first_tool",
     )

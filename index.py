@@ -35,6 +35,7 @@ async def check_user_token(request: Request, call_next):
         "/get_response",
         "/docs",
         "/openapi.json",
+        "/get_file_data",
     ]
 
     if request.method == "OPTIONS":

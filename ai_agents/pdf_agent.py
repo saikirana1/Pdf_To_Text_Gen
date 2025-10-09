@@ -25,7 +25,8 @@ def query_chunk(text: str) -> dict:
         )
        
         pdf_content = results["result"]["hits"][0]["fields"]["page_content"]
-        print("i am pdf rag content")
+        print("i am pdf rag content===========>")
+        print(pdf_content)
         # print(results)
        
     except Exception as e:
