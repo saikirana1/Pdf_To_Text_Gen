@@ -1,9 +1,16 @@
 import  { useEffect, useState } from "react";
 import axios from "axios";
 
-const FileSelector = ({ onSelectionChange }) => {
+
+
+interface FileButtonProps {
+  onSelectionChange?: (text: string) => void; 
+  onMicClick?: (isRecording: boolean) => void; 
+}
+
+const FileSelector = ({ onSelectionChange }:FileButtonProps) => {
   const [files, setFiles] = useState([]);
-  const [selectedFiles, setSelectedFiles] = useState({});
+  const [selectedFiles, setSelectedFiles] = useState<any>({});
   let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // {id: file}
 
   // Fetch all files from backend
@@ -27,7 +34,7 @@ const FileSelector = ({ onSelectionChange }) => {
   };
 
   const handleCheckboxChange = (file: any) => {
-    const updated = { ...selectedFiles };
+    const updated:any = { ...selectedFiles };
     if (updated[file.id]) {
       delete updated[file.id];
     } else {
@@ -37,7 +44,7 @@ const FileSelector = ({ onSelectionChange }) => {
 
     // Send selected URLs to parent component or anywhere
     if (onSelectionChange) {
-      const urls = Object.values(updated).map((f) => f.file_url);
+      const urls:any = Object.values(updated).map((f:any) => f.file_url);
       onSelectionChange(urls);
     }
   };
@@ -46,7 +53,7 @@ const FileSelector = ({ onSelectionChange }) => {
     <div style={{ padding: "20px", maxWidth: "600px" }}>
       <h2>Select Files</h2>
       <ul>
-        {files.map((file) => (
+        {files.map((file:any) => (
           <li key={file.id}>
             <input
               type="checkbox"
