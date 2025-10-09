@@ -104,6 +104,7 @@ useEffect(() => {
     setEndpoint("get_response");
   }
 }, [enurls]);
+console.log(time)
 
 useEffect(() => {
   console.log(endpoint, "✅ current endpoint");
