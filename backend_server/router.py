@@ -16,23 +16,21 @@ from .event_generator import (
     event_generator_rag,
     event_generator_file,
 )
-from open_ai.synthesizing_data import synthesizing_data
 from ai_agents.data_decison_agent import data_decison_agent
 from clean_pdf_data.extract_pages import extract_pages
 from clean_pdf_data.pdf_json_data import pdf_to_json
 from clean_pdf_data.pdf_plain_text import extract_plain_text_outside_tables
 from open_ai.pdf_to_json_data_extract import pdf_to_json_data_extract
-import io
+
 import os
 from open_ai.invoice_pdf_to_json import invoice_pdf_json
-from open_ai.create_pdf_embedings import create_pdf_embedings
-from pinecone_v_db.insert_chunks import insert_chunks
+
 from supabase_packages.upload_file import upload_file_to_supabase
 from database_sql.insert_and_get_file_data import (
     insert_file_record,
     get_all_files_from_db,
 )
-from supabase_packages.upload_file import uplod_file_details_sql
+
 from open_ai.client import openai_client
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 client = openai_client()
@@ -113,10 +111,11 @@ async def upload_file(file: UploadFile = File(...)):
             print("i am in invoice agent elif===========>")
             result = invoice_pdf_json(f"demo{file_extension}")
         elif agent == "NORMAL_DATA_AGENT":
-            data = create_pdf_embedings(f"demo{file_extension}")
-            result = insert_chunks(data)
-            print("extracted result is", result)
-        await asyncio.sleep(10)
+            # data = create_pdf_embedings(f"demo{file_extension}")
+            # result = insert_chunks(data)
+            print(
+                "extracted result is",
+            )
         two_pages_data = {"message": "File processed successfully"}
 
     except Exception as e:
