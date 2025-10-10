@@ -26,13 +26,18 @@ async def file_data_synthesis(input_question, urls):
         name="RAG_AGENT",
         instructions=(
             """
-              you are the agent for the response based on give data and user quation 
-              give best answers
-           
+            You are an agent responsible for generating accurate and concise answers
+            based on the provided data and the user's question. Ensure your responses
+            are clear, relevant, and informative.
+            Do not format the answer as a table
+            respond only in natural, sentence-based text
+            
            """
         ),
         handoff_description="""
-       based on given data and user quation respond
+            Based on the given data and user question, provide a well-structured,
+            natural-language response. Avoid generating tables use complete
+            sentences instead.
         """,
         tool_use_behavior="run_llm_again",
         model="gpt-4o-mini",
