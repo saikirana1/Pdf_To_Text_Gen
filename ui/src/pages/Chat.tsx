@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 import VoiceButton from "./VoiceButton";
 import FileSelector from "./FileSelector";
-
+import Markdown from 'react-markdown'
 
 interface Message {
   role: "user" | "assistant";
@@ -264,7 +264,7 @@ useEffect(() => {
                   }`}
               >
              
-                <strong>{item.role === "user" ? "User" : "AI"}:</strong> {item.text}
+                <strong>{item.role === "user" ? "User" : "AI"}:</strong> <Markdown>{item.text}</Markdown> 
               </li>
             ))}
           </ul>
