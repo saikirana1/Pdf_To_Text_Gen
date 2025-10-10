@@ -6,7 +6,10 @@ import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 import VoiceButton from "./VoiceButton";
 import FileSelector from "./FileSelector";
-import Markdown from 'react-markdown'
+// import Markdown from 'react-markdown'
+import remarkGfm from "remark-gfm";
+import ReactMarkdown from "react-markdown";
+
 
 interface Message {
   role: "user" | "assistant";
@@ -264,7 +267,7 @@ useEffect(() => {
                   }`}
               >
              
-                <strong>{item.role === "user" ? "User" : "AI"}:</strong> <Markdown>{item.text}</Markdown> 
+                <strong>{item.role === "user" ? "User" : "AI"}:</strong>   <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.text}</ReactMarkdown>
               </li>
             ))}
           </ul>
@@ -311,3 +314,47 @@ useEffect(() => {
 }
 
 export default Chat;
+
+
+
+
+
+
+// import React from "react";
+// import ReactMarkdown from "react-markdown";
+// import remarkGfm from "remark-gfm";
+
+// function ComparisonMarkdown() {
+//   const markdownText = `
+// **AI:**
+
+// Here's a table outlining the differences between Python and Java:
+
+// | Feature | Python | Java |
+// |----------|---------|------|
+// | **Syntax** | Simple and concise | More verbose |
+// | **Typing** | Dynamically typed | Statically typed |
+// | **Compilation** | Interpreted | Compiled to bytecode |
+// | **Performance** | Generally slower | Generally faster |
+// | **Memory Management** | Automatic garbage collection | Automatic garbage collection |
+// | **Concurrency** | Thread-based with GIL | True multi-threading support |
+// | **Standard Libraries** | Extensive and diverse | Comprehensive Java Standard Library |
+// | **Use Cases** | Web development, data science | Enterprise applications, mobile |
+// | **Ease of Learning** | Easier for beginners | More complex for beginners |
+// | **Community Support** | Large and active | Large and well-established |
+// | **Platform Independence** | Yes (via interpreter) | Yes (via JVM) |
+// | **Object-Oriented** | Supports OOP but flexible | Strictly object-oriented |
+
+// This table summarizes the primary differences between **Python** and **Java**, providing a clear comparison.
+// `;
+
+//   return (
+//     <div className="p-6 bg-gray-50 rounded-lg shadow max-w-3xl mx-auto w-100">
+//       <ReactMarkdown remarkPlugins={[remarkGfm]}>
+//         {markdownText}
+//       </ReactMarkdown>
+//     </div>
+//   );
+// }
+
+// export default ComparisonMarkdown;
