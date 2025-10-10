@@ -150,7 +150,7 @@ async def upload(file: UploadFile = File(...)):
         return {"error": str(e), "status": "error"}
 
 
-@router.get("/files")
+@router.get("/get_files")
 def get_all_files():
     return get_all_files_from_db()
 

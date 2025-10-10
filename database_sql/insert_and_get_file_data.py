@@ -28,7 +28,7 @@ def get_all_files_from_db():
     """
     with get_db_session() as session:
         statement = select(FileData)
-        files = session.exec(statement).all()  # execute the query
+        files = session.exec(statement).all()
         return [
             {
                 "id": f.id,

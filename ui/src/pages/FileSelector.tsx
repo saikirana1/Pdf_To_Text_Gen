@@ -30,7 +30,7 @@ const FileSelector = ({ onSelectionChange }: FileButtonProps) => {
         console.error("No auth token found");
         return;
       }
-      const res = await axios.get(`${VITE_BACKEND_URL}/files`, {
+      const res = await axios.get(`${VITE_BACKEND_URL}/get_files`, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
