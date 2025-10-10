@@ -29,12 +29,14 @@ async def file_data_synthesis(input_question, urls):
             You are an agent responsible for generating accurate and concise answers
             based on the provided data and the user's question.
             Respond only in natural, sentence-based text suitable for React Markdown.
-            
+            DO NOT use pipes (||). 
+            ;j
            """
         ),
         handoff_description="""
            Provide well-structured, natural-language responses.
            generate complete sentences compatible with React Markdown.
+          DO NOT use pipes (||). 
         """,
         tool_use_behavior="run_llm_again",
         model="gpt-4o-mini",
