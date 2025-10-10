@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useCounterStore } from "../store";
 
 interface File {
   id: string;
@@ -14,14 +15,14 @@ interface FileButtonProps {
 const FileSelector = ({ onSelectionChange }: FileButtonProps) => {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File }>({});
-  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL ;
-
+  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+   const {status} = useCounterStore();
   useEffect(() => {
     const fetchData = async () => {
       await fetchFiles();
     };
     fetchData();
-  }, []);
+  }, [status]);
 
   const fetchFiles = async () => {
     try {
@@ -59,7 +60,7 @@ const FileSelector = ({ onSelectionChange }: FileButtonProps) => {
 
   return (
     <div style={{ padding: "20px", maxWidth: "600px" }}>
-      <h2>Select Files</h2>
+      <h2>Uploaded Files</h2>
       <ul>
         {files.map(file => (
           <li key={file.id}>
@@ -73,12 +74,12 @@ const FileSelector = ({ onSelectionChange }: FileButtonProps) => {
         ))}
       </ul>
 
-      <h3>Selected URLs:</h3>
+      {/* <h3>Selected URLs:</h3>
       <ul>
         {Object.values(selectedFiles).map(f => (
           <li key={f.id}>{f.file_url}</li>
         ))}
-      </ul>
+      </ul> */}
     </div>
   );
 };

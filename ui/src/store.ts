@@ -7,9 +7,14 @@ interface CounterState {
   setFile?: (value: string) => void;
 }
 
+
+
+
 export const useCounterStore = create<CounterState>((set) => ({
   status: "",
   file: "",
   setFile: (value: string) => set({ file: value }),
   setStatus: (value: string) => set({ status: value }),
 }));
+
+
