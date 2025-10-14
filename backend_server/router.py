@@ -30,7 +30,8 @@ from database_sql.insert_and_get_file_data import (
     insert_file_record,
     get_all_files_from_db,
 )
-
+from open_ai.create_pdf_embedings import create_pdf_embedings_dense
+from pinecone_v_db.insert_records_dense import insert_records_dense
 from open_ai.client import openai_client
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 client = openai_client()
@@ -111,8 +112,10 @@ async def upload_file(file: UploadFile = File(...)):
             print("i am in invoice agent elif===========>")
             result = invoice_pdf_json(f"demo{file_extension}")
         elif agent == "NORMAL_DATA_AGENT":
-            # data = create_pdf_embedings(f"demo{file_extension}")
-            # result = insert_chunks(data)
+            data = create_pdf_embedings_dense(f"demo{file_extension}")
+            print("--------------------------------------")
+            print(data)
+            result = insert_records_dense(data)
             print(
                 "extracted result is",
             )

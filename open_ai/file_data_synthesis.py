@@ -15,10 +15,10 @@ import os
 
 
 load_dotenv()
-session_db_name = os.getenv("session_db_name")
-session_con_user = os.getenv("session_con_user")
+# session_db_name = os.getenv("session_db_name")
+# session_con_user = os.getenv("session_con_user")
 
-session = SQLiteSession("session_con_user", "session_db_name1.db")
+# session = SQLiteSession("session_con_user", "session_db_name1.db")
 
 
 async def file_data_synthesis(input_question, urls):

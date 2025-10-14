@@ -44,7 +44,6 @@ async def check_user_token(request: Request, call_next):
     if any(request.url.path.startswith(p) for p in public_paths):
         return await call_next(request)
 
-    print("headers data", request.headers)
     auth_header = request.headers.get("Authorization")
     # print(auth_header, "auth_header")
     if not auth_header or not auth_header.startswith("Bearer "):
@@ -53,7 +52,6 @@ async def check_user_token(request: Request, call_next):
         )
 
     token = auth_header.split(" ")[1]
-    print("i ma from backed token", token)
 
     try:
         verify_token(token)

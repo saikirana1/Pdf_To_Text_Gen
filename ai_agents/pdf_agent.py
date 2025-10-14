@@ -13,36 +13,43 @@ from dotenv import load_dotenv
 import os
 
 
+from pinecone_v_db.generate_embeddings import generate_embedding
+from pinecone_v_db.get_db_table import dense_get_db_table
+from dotenv import load_dotenv
+from pinecone_v_db.pinecone_api_client import pinecone_cli
+
+
 load_dotenv()
 session_db_name = os.getenv("session_db_name")
 session_con_user = os.getenv("session_con_user")
 
 session = SQLiteSession(session_con_user, session_db_name)
 @function_tool
-def query_chunk(text: str) -> dict:
-    
+def query_chunk(quation: str) -> dict:
+    print("started==================================================>")
     try:
-        db, table = get_db_table()
-        table="pdf_chunks"
         pc = pinecone_cli()
-        index = pc.Index(db)
-        results = index.search(
-            namespace=table, query={"inputs": {"text": text}, "top_k": 1}
-        )
-       
-        pdf_content = results["result"]["hits"][0]["fields"]["page_content"]
-        print("i am pdf rag content===========>")
-        print(pdf_content)
-        # print(results)
-       
-    except Exception as e:
-        return "no result found from rag or technical issue"
-    return pdf_content
 
+        db, table_name = dense_get_db_table()
+
+        index = pc.Index(db)
+
+        vector = generate_embedding(quation)
+        response = index.query(
+            vector=vector,
+            namespace=table_name,
+            top_k=1,
+            include_metadata=True,
+            include_values=False,
+        )
+        print("response---------------->", response)
+    except Exception as e:
+        print("error from tool ---------->", e)
+    return response
 
 
 async def pdf_agent(input_prompt):
-    
+    print("===============> hellow")
 
     rag_agent = Agent(
         name="RAG_AGENT",

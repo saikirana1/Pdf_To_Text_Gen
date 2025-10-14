@@ -61,17 +61,33 @@ async def multi_agent_handoff(input_prompt):
     CONSTRAINT fk_transaction_account FOREIGN KEY (account_number) 
         REFERENCES account(account_number)
 );
-          For a given input, write an simple and accurate PostgreSQL query to run against the database.""",
+
+Your task:
+- Write a **simple, valid, and accurate PostgreSQL query** based on the user’s question.
+- Do **not** add explanations — just return the query.
+- Prefer aggregate or mathematical operations (e.g., SUM, AVG, COUNT) when the question implies them.
+- Always use correct table and column names from the schema.
+If the user provides an account number , transaction id like , use it in the query.
+Rules:
+While writing the query if user give the account number  or transaction id the use it
+
+""",
         output_type=Query,
-        handoff_description="""When users  asks for bank transaction related aggregates ,mathematical quation and time related quation
-        which means quation related to sql query then use this""",
+        handoff_description="""Use this agent when the user asks for:
+- Invoice-related **aggregates**, **mathematical operations**, or **calculations**.
+- Questions involving fields like `account number` and `transaction id`,.
+Rules:
+While writing the query if user give the invoice id the use it 
+you should use invoiced or any unique key then use in sql query do't put empty""",
     )
 
     rag_agent = Agent(
         name="RAG_AGENT",
-        model='gpt-4o-mini',
+        model="gpt-5",
         instructions=(
-            """You are a retrieval agent. 
+            """You are a retrieval agent.
+Use external data retrieval tools (RAG) when the question involves 
+
         If the user asks any question that contains or refers to a  description of transaction  
         (e.g. NEFT, RTGS, cheque, IMPS, UTR numbers,human names ,company names in descriptions), 
         you MUST call the tool `query_text` with the user's text. 
@@ -80,7 +96,9 @@ async def multi_agent_handoff(input_prompt):
         tools=[query_text],
         output_type=Result,
         handoff_description="""Use this agent when the user provides a transaction description 
-or mentions names/company names to find similar transactions""",
+or mentions names/company names to find similar transactions
+
+""",
         model_settings=ModelSettings(tool_choice="query_text"),
         tool_use_behavior="stop_on_first_tool",
     )
@@ -88,7 +106,7 @@ or mentions names/company names to find similar transactions""",
    
 
     allocator_agent = Agent(
-        model='gpt-4o-mini',
+        model="gpt-5",
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
         handoffs=[sql_agent, rag_agent],
@@ -98,7 +116,7 @@ or mentions names/company names to find similar transactions""",
 
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "SQL_AGENT":
-        query_result = await query_data(result.final_output.query)
+        query_result = query_data(result.final_output.query)
         print(
             "sql_qury_result----------------------------------------------------->",
             query_result,
@@ -114,8 +132,11 @@ or mentions names/company names to find similar transactions""",
         return SqlRagaent(agent=result.last_agent.name,sql_result=query_result, sql_query=result.final_output.query)
     elif result.last_agent.name == "RAG_AGENT":
         rag_result= await run_rag_agent(input_prompt,result.final_output)
+        print("i am bank_rag agent")
         ra_result=rag_result.model_dump()
 
        
         # print("i am rag ",result.final_output)
         return SqlRagaent(agent=ra_result.get("agent"),sql_result=ra_result.get("sql_result"), sql_query=ra_result.get("sql_query"))
+    else:
+        print("i am else block=-==========================>")

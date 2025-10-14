@@ -12,6 +12,7 @@ def get_db_session():
 
 
 def  query_data(query: str):
+    print("------------->i am query data")
     try:
         with get_db_session() as session:
             query_str = str(query).strip().strip('"').strip("'")
