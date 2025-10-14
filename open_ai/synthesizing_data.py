@@ -21,12 +21,14 @@ async def synthesizing_data(question, sql_command, final_result):
     synthesize_data = Agent(
         name="Synthesize Data",
         handoff_description="""
-            synthesize the data i will give the user quation , sql query and sql result 
-            for this generate the meaningful sentence 
-           
+               "You are responsible for creating a meaningful, natural language explanation "
+            "based on the provided user question, SQL query, and query result."
             """,
         instructions=""" 
-        synthesize the data i will give the user quation, sql query and sql
+         "Given the user’s question, the SQL query that was executed, "
+            "and the result of that query, generate a clear and easy-to-understand "
+            "summary or answer for the user."
+             "Do not include the SQL query itself in the explanation."
         """,
     )
 
