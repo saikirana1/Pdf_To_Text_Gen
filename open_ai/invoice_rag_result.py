@@ -30,7 +30,7 @@ def query_invoice(text: str) -> dict:
         results = index.search(
             namespace=table, query={"inputs": {"text": text}, "top_k": 1}
         )
-        # print("results===========>", results)
+        print("results===========>", results)
         # # print(results)
         # name = results["result"]["hits"][0]["fields"]["description"]
         # # description = results["result"]["hits"][0]["fields"]["description"]
