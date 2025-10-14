@@ -41,17 +41,15 @@ class Query(BaseModel):
 async def multi_agent_handoff(input_prompt):
     sql_agent = Agent(
         name="SQL_AGENT",
-        model='gpt-4o-mini',
+        model="gpt-4o-mini",
         instructions="""You are an expert at writing SQL queries for PostgreSQL database with the following schema:
            CREATE TABLE account (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     account_number UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
     ifsc_code TEXT,
     name TEXT
 );
 
   CREATE TABLE transaction (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     transaction_id TEXT,
     transaction_date DATE,
     withdrawal DOUBLE PRECISION,
@@ -100,7 +98,12 @@ or mentions names/company names to find similar transactions""",
 
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "SQL_AGENT":
-        query_result = query_data(result.final_output.query)
+        query_result = await query_data(result.final_output.query)
+        print(
+            "sql_qury_result----------------------------------------------------->",
+            query_result,
+        )
+        print("sql_query=======>", result.final_output.query)
         # print("query_result",query_result,type(query_result))
         # print(type(query_result))
 
