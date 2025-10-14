@@ -41,17 +41,15 @@ class Query(BaseModel):
 async def multi_agent_handoff(input_prompt):
     sql_agent = Agent(
         name="SQL_AGENT",
-        model='gpt-4o-mini',
+        model="gpt-4o-mini",
         instructions="""You are an expert at writing SQL queries for PostgreSQL database with the following schema:
            CREATE TABLE account (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     account_number UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
     ifsc_code TEXT,
     name TEXT
 );
 
   CREATE TABLE transaction (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     transaction_id TEXT,
     transaction_date DATE,
     withdrawal DOUBLE PRECISION,
