@@ -99,6 +99,8 @@ or mentions names/company names to find similar transactions""",
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "SQL_AGENT":
         query_result = query_data(result.final_output.query)
+        print("sql_qury_result--------->", query_result)
+        print("sql_query=======>", result.final_output.query)
         # print("query_result",query_result,type(query_result))
         # print(type(query_result))
 
