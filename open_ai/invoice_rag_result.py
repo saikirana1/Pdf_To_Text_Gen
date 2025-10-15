@@ -22,6 +22,7 @@ session = SQLiteSession(session_con_user, session_db_name)
 
 @function_tool
 def query_invoice(text: str) -> dict:
+    print("======================================> i am ")
     try:
         db, table = get_db_table()
         table = "ice_cream_name"
@@ -30,7 +31,7 @@ def query_invoice(text: str) -> dict:
         results = index.search(
             namespace=table, query={"inputs": {"text": text}, "top_k": 1}
         )
-        print("results===========>", results)
+        # print("results===========>", results)
         # # print(results)
         # name = results["result"]["hits"][0]["fields"]["description"]
         # # description = results["result"]["hits"][0]["fields"]["description"]

@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings, SQLiteSession
 import asyncio
-from dotenv import load_dotenv
 from openai import OpenAI
 
 from .invoice_data_agent import invoice_data_agent
@@ -31,7 +30,7 @@ class Query(BaseModel):
 async def main_agent(input_prompt)->ReturnData:
     bank_agent = Agent(
         name="BANK_AGENT",
-        model="gpt-5",
+        model="gpt-4o-mini",
         instructions="""You are an expert in identifying questions related to bank transactions and bank-related queries.""",
         output_type=Query,
         handoff_description="""Use this agent if:
@@ -45,7 +44,7 @@ Example queries:
 
     invoice_agent = Agent(
         name="INVOICE_AGENT",
-        model="gpt-5",
+        model="gpt-4o-mini",
         instructions="""You are an expert in identifying questions related to invoice data or queries related to invoice data.""",
         output_type=Result,
         handoff_description="""Use this agent if the question involves invoice ID or products; if query contains 'invoice', use this one.""",
@@ -53,7 +52,7 @@ Example queries:
 
     # document_agent = Agent(
     #     name="DOCUMENT_AGENT",
-    #     model="gpt-5",
+    #     model="gpt-5-nano",
     #     instructions="""You are an expert in identifying questions related to documents . such as
     #     any topic related to with out structured data """,
     #     output_type=Result,
@@ -63,9 +62,9 @@ Example queries:
 
 
     allocator_agent = Agent(
-        model="gpt-5",
+        model="gpt-5-mini",
         name="Allocator",
-        instructions="Forward queries to the appropriate agent based on topic.",
+        instructions="Forward queries to the appropriate agent based on input quation.",
         handoffs=[bank_agent, invoice_agent],
     )
 
@@ -74,7 +73,7 @@ Example queries:
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "BANK_AGENT":
         bank_account_result = await multi_agent_handoff(input_prompt)
-        print("bank_account_result=====================>", bank_account_result)
+        print("i am bank agent---------------------->", bank_account_result)
         if bank_account_result is None:
             # handle the case when no agent handled the query
             print("multi_agent_handoff returned None")
@@ -95,14 +94,14 @@ Example queries:
         invoice_result = await invoice_data_agent(input_prompt)
         if invoice_result is None:
             # handle the case when no agent handled the query
-            print("multi_agent_handoff returned None")
+            print("invoice_result returned None")
             return MainAgent(
                 child_agent="RAG_AGENT",
                 parent_agent=result.last_agent.name,
                 sql_result=None,
                 sql_query=None,
             )
-        print("invoice_result============>", invoice_result)
+        print("invoice_agent ------------------>", invoice_result)
         sql_agent=invoice_result.model_dump()
         if sql_agent.get("agent")=="SQL_AGENT":
             print("i am from invoice",sql_agent)
@@ -113,9 +112,9 @@ Example queries:
                 parent_agent=result.last_agent.name,
             )
     # elif result.last_agent.name == "DOCUMENT_AGENT":
-    #     # pdf_result=await pdf_agent(input_prompt)
-    #     return MainAgent(child_agent="RAG_AGENT",parent_agent=result.last_agent.name)
+    #     pdf_result = await pdf_agent(input_prompt)
+    #     return MainAgent(child_agent="RAG_AGENT", parent_agent=result.last_agent.name)
     else:
-        print("i am else====================>document agent")
+        print("i am else ----------------------->document agent")
         return MainAgent(child_agent="RAG_AGENT", parent_agent="DOCUMENT_AGENT")
     

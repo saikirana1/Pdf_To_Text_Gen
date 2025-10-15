@@ -39,42 +39,57 @@ router = APIRouter()
 
 @router.get("/get_response")
 async def sse_endpoint(user_question: str):
-            result : MainAgent= await main_agent(user_question)
-            main_agent_data=result.model_dump()
-            parent_agent=main_agent_data.get("parent_agent")
-            print(parent_agent)
-            if parent_agent=="BANK_AGENT":
-              if main_agent_data.get("child_agent")=="SQL_AGENT":
-                   return StreamingResponse(event_generator(user_question, main_agent_data.get("sql_query"), main_agent_data.get("sql_result")), media_type="text/event-stream")
-              elif main_agent_data.get("child_agent")=="RAG_AGENT":
-                   return StreamingResponse(event_generator(user_question, main_agent_data.get("sql_query"), main_agent_data.get("sql_result")), media_type="text/event-stream") 
-            if parent_agent=="INVOICE_AGENT":
-                if main_agent_data.get("child_agent") == "SQL_AGENT":
-                    print(
-                        user_question,
-                        main_agent_data.get("sql_query"),
-                        main_agent_data.get("sql_result"),
-                        "===========>from router input",
-                    )
-                    return StreamingResponse(
-                        event_generator(
-                            user_question,
-                            main_agent_data.get("sql_query"),
-                            main_agent_data.get("sql_result"),
-                        ),
-                        media_type="text/event-stream",
-                    )
-                elif main_agent_data.get("child_agent") == "RAG_AGENT":
-                    return StreamingResponse(
-                        event_generator_rag(user_question),
-                        media_type="text/event-stream",
-                    )
-            if parent_agent=="DOCUMENT_AGENT":
-                 print("i am document from the parent")
-                 print("i am from rag router pdf")
-                 return StreamingResponse(event_generator_pdf(user_question), media_type="text/event-stream")
-            else:
-                 print("nothing to match")
+    result: MainAgent = await main_agent(user_question)
+    print(result)
+    main_agent_data = result.model_dump()
+    parent_agent = main_agent_data.get("parent_agent")
+    print(parent_agent)
+    if parent_agent == "BANK_AGENT":
+        if main_agent_data.get("child_agent") == "SQL_AGENT":
+            return StreamingResponse(
+                event_generator(
+                    user_question,
+                    main_agent_data.get("sql_query"),
+                    main_agent_data.get("sql_result"),
+                ),
+                media_type="text/event-stream",
+            )
+        elif main_agent_data.get("child_agent") == "RAG_AGENT":
+            return StreamingResponse(
+                event_generator(
+                    user_question,
+                    main_agent_data.get("sql_query"),
+                    main_agent_data.get("sql_result"),
+                ),
+                media_type="text/event-stream",
+            )
+    elif parent_agent == "INVOICE_AGENT":
+        if main_agent_data.get("child_agent") == "SQL_AGENT":
+            print(
+                user_question,
+                main_agent_data.get("sql_query"),
+                main_agent_data.get("sql_result"),
+                "===========>from router input",
+            )
+            return StreamingResponse(
+                event_generator(
+                    user_question,
+                    main_agent_data.get("sql_query"),
+                    main_agent_data.get("sql_result"),
+                ),
+                media_type="text/event-stream",
+            )
+        elif main_agent_data.get("child_agent") == "RAG_AGENT":
+            return StreamingResponse(
+                event_generator_rag(user_question),
+                media_type="text/event-stream",
+            )
+    elif parent_agent == "DOCUMENT_AGENT":
+        return StreamingResponse(
+            event_generator_pdf(user_question), media_type="text/event-stream"
+        )
+    else:
+        print("nothing to match")
 
 
 @router.post("/upload")

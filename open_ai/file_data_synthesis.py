@@ -11,7 +11,7 @@ from openai.types.responses import ResponseTextDeltaEvent
 from agents import Agent, Runner, SQLiteSession
 
 from dotenv import load_dotenv
-import os
+
 
 
 load_dotenv()
