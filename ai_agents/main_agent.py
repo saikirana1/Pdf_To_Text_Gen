@@ -31,12 +31,16 @@ async def main_agent(input_prompt)->ReturnData:
     bank_agent = Agent(
         name="BANK_AGENT",
         model="gpt-4o-mini",
-        instructions="""You are an expert in identifying questions related to bank transactions and bank-related queries.""",
+        instructions="""You are an expert in identifying questions related to bank transactions and bank-related queries.
+          and if quation contains the bank statement then use it 
+        
+        """,
         output_type=Query,
         handoff_description="""Use this agent if:
 - The question includes words like 'transaction', 'account number', 'balance', 'debit', 'credit', 'statement', or 'date'.
 - The question asks about money flow, transaction IDs, or transaction details on specific dates.
 - The question mentions a bank, account number, or customer name in relation to a transaction.
+if quation contains the bank statements then use this agent
 Example queries:
 - 'Show transactions on 2020-05-18 for account 024505005757'
 """,
@@ -49,18 +53,6 @@ Example queries:
         output_type=Result,
         handoff_description="""Use this agent if the question involves invoice ID or products; if query contains 'invoice', use this one.""",
     )
-
-    # document_agent = Agent(
-    #     name="DOCUMENT_AGENT",
-    #     model="gpt-5-nano",
-    #     instructions="""You are an expert in identifying questions related to documents . such as
-    #     any topic related to with out structured data """,
-    #     output_type=Result,
-    #     handoff_description="""Use this agent if the question involves documents , such as those using RAG (Retrieval-Augmented Generation).
-    #     with out structured data which relates to non tabular data then use this agent""",
-    # )
-
-
     allocator_agent = Agent(
         model="gpt-5-mini",
         name="Allocator",
@@ -68,7 +60,10 @@ Example queries:
         handoffs=[bank_agent, invoice_agent],
     )
 
-    result = await Runner.run(allocator_agent, input_prompt, session=session)
+    result = await Runner.run(
+        allocator_agent,
+        input_prompt,
+    )
 
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "BANK_AGENT":

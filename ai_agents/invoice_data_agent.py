@@ -112,7 +112,7 @@ you should use invoiced or any unique key then use in sql query do't put empty
 
     rag_agent = Agent(
         name="RAG_AGENT",
-        model="gpt-5",
+        model="gpt-4o-mini",
         instructions=(
             """
 You are a retrieval agent.
@@ -144,7 +144,7 @@ you should use the user asking about single invoice number details then use it
     )
 
     allocator_agent = Agent(
-        model="gpt-5",
+        model="gpt-5-mini",
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
         handoffs=[sql_agent, rag_agent],
