@@ -3,7 +3,6 @@ import "./app/globals.css";
 import "./App.css";
 import Chat from "./pages/Chat";
 import Login from "./pages/Login";
-import UploadDocument from "./pages/UploadDocument";
 import FileSelector from "./pages/FileSelector";
 import SelectedFiles from "./pages/SelectedFiles";
 import { Toaster } from "react-hot-toast";

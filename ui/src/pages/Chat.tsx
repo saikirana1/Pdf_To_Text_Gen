@@ -5,21 +5,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import VoiceButton from "./VoiceButton";
-import FileSelector from "./FileSelector";
+
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
-import SelectedFiles from './SelectedFiles';
 
-interface Message {
-  role: "user" | "assistant";
-  text: string;
-}
+
 function Chat() {
   const navigate = useNavigate();
   const [userQuestion, setUserQuestion] = useState("");
   const eventSourceRef = useRef<EventSource | null>(null);
-  // const [chatData, setChatData] = useState<Message[]>([]);
   
   const [enurls, setEnurls] = useState("");
   const [endpoint, setEndpoint] = useState("");
