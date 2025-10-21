@@ -9,6 +9,7 @@ import FileSelector from "./FileSelector";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
+import SelectedFiles from './SelectedFiles';
 
 interface Message {
   role: "user" | "assistant";
@@ -18,12 +19,13 @@ function Chat() {
   const navigate = useNavigate();
   const [userQuestion, setUserQuestion] = useState("");
   const eventSourceRef = useRef<EventSource | null>(null);
-  const [chatData, setChatData] = useState<Message[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
+  // const [chatData, setChatData] = useState<Message[]>([]);
+  
   const [enurls, setEnurls] = useState("");
   const [endpoint, setEndpoint] = useState("");
 
-  const { status, file, setFile, setStatus } = useCounterStore();
+  const { status, file, setFile, setStatus, files_urls, chatData, setChatData } = useCounterStore();
+  
   const [time, setTime] = useState(15);
 
   useEffect(() => {
@@ -78,21 +80,29 @@ function Chat() {
     };
   }, [file, status]);
 
-  useEffect(() => {
-    try {
-      const decodedUrls = decodeURIComponent(enurls || "%5B%5D"); // safely decode
-      const parsedUrls = JSON.parse(decodedUrls); // parse the JSON string
 
-      if (Array.isArray(parsedUrls) && parsedUrls.length > 0) {
+  useEffect(() => {
+  try {
+    if (files_urls && files_urls.length > 0) {
+      const onlyUrls = files_urls.map((file) => file.file_url);
+      console.log("🧩 File URLs:", onlyUrls);
+      const encodedUrls = encodeURIComponent(JSON.stringify(onlyUrls));
+      setEnurls(encodedUrls);
+      if (encodedUrls) {
         setEndpoint("get_file_data");
-      } else {
-        setEndpoint("get_response");
       }
-    } catch (error) {
-      console.warn("Error decoding URLs:", error);
+      
+    } else {
       setEndpoint("get_response");
     }
-  }, [enurls]);
+  } catch (error) {
+    console.warn("Error decoding URLs:", error);
+    setEndpoint("get_response");
+  }
+  }, [files_urls]);
+  
+
+
   console.log(time);
 
   useEffect(() => {
@@ -143,16 +153,13 @@ function Chat() {
       setUserQuestion("");
     }
   };
-  const handleSelectedUrls = (urls: any) => {
-    // console.log("Selected file URLs for OpenAI:", urls);
-    const encodedUrls = encodeURIComponent(JSON.stringify(urls));
-    setEnurls(encodedUrls);
-  };
+ 
 
   console.log(enurls);
   const handle_onclick = () => {
     if (!userQuestion.trim()) return;
     setChatData((prev) => [...prev, { role: "user", text: userQuestion }]);
+    
     console.log(userQuestion);
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
@@ -194,10 +201,7 @@ function Chat() {
       }
     };
   }, []);
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+  
   return (
     <div >
       <AnimatePresence>
@@ -216,14 +220,7 @@ function Chat() {
             </motion.div>
           )}
         </AnimatePresence>
-        {/* <div className="flex flex-col h-15">
-          <button
-            onClick={handleLogout}
-            className="absolute top-4 right-4 px-2 py-2 bg-zinc-400 text-white rounded-lg hover:bg-gray-600 transition"
-          >
-            LogOut
-          </button>
-        </div> */}
+        
 
         <ul className="flex flex-col space-y-2 flex-1 mb-20 w-200">
           {chatData.map((item, index) => (

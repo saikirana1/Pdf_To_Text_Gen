@@ -2,16 +2,16 @@ from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings, SQLiteSession
 import asyncio
 from openai import OpenAI
-
 from .invoice_data_agent import invoice_data_agent
 from .pdf_agent import pdf_agent
 
 from .multi_agent_handoff import multi_agent_handoff
 from open_ai.synthesizing_data import synthesizing_data
-from typing import Optional,List,Tuple
-from data_model.main_agent import DocumentAGENT,InvoiceAgent,ReturnData,MainAgent
+from typing import Optional, List, Tuple
+from data_model.main_agent import DocumentAGENT, InvoiceAgent, ReturnData, MainAgent
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
 session_db_name = os.getenv("session_db_name")
 session_con_user = os.getenv("session_con_user")
@@ -27,7 +27,7 @@ class Query(BaseModel):
     query: str
 
 
-async def main_agent(input_prompt)->ReturnData:
+async def main_agent(input_prompt) -> ReturnData:
     bank_agent = Agent(
         name="BANK_AGENT",
         model="gpt-4o-mini",
@@ -78,13 +78,23 @@ Example queries:
                 sql_result=None,
                 sql_query=None,
             )
-        sql_agent=bank_account_result.model_dump()
-        if sql_agent.get("agent")=="SQL_AGENT":
-            print("i am from bank",sql_agent)
-            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
-        elif sql_agent.get("agent")=="RAG_AGENT":
-            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
-    
+        sql_agent = bank_account_result.model_dump()
+        if sql_agent.get("agent") == "SQL_AGENT":
+            print("i am from bank", sql_agent)
+            return MainAgent(
+                child_agent=sql_agent.get("agent"),
+                parent_agent=result.last_agent.name,
+                sql_result=sql_agent.get("sql_result"),
+                sql_query=sql_agent.get("sql_query"),
+            )
+        elif sql_agent.get("agent") == "RAG_AGENT":
+            return MainAgent(
+                child_agent=sql_agent.get("agent"),
+                parent_agent=result.last_agent.name,
+                sql_result=sql_agent.get("sql_result"),
+                sql_query=sql_agent.get("sql_query"),
+            )
+
     elif result.last_agent.name == "INVOICE_AGENT":
         invoice_result = await invoice_data_agent(input_prompt)
         if invoice_result is None:
@@ -97,11 +107,16 @@ Example queries:
                 sql_query=None,
             )
         print("invoice_agent ------------------>", invoice_result)
-        sql_agent=invoice_result.model_dump()
-        if sql_agent.get("agent")=="SQL_AGENT":
-            print("i am from invoice",sql_agent)
-            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
-        elif sql_agent.get("agent")=="RAG_AGENT":
+        sql_agent = invoice_result.model_dump()
+        if sql_agent.get("agent") == "SQL_AGENT":
+            print("i am from invoice", sql_agent)
+            return MainAgent(
+                child_agent=sql_agent.get("agent"),
+                parent_agent=result.last_agent.name,
+                sql_result=sql_agent.get("sql_result"),
+                sql_query=sql_agent.get("sql_query"),
+            )
+        elif sql_agent.get("agent") == "RAG_AGENT":
             return MainAgent(
                 child_agent=sql_agent.get("agent"),
                 parent_agent=result.last_agent.name,
@@ -112,4 +127,3 @@ Example queries:
     else:
         print("i am else ----------------------->document agent")
         return MainAgent(child_agent="RAG_AGENT", parent_agent="DOCUMENT_AGENT")
-    

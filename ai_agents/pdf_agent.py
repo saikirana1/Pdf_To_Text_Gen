@@ -4,7 +4,6 @@ from pinecone_v_db.get_db_table import get_db_table
 from pinecone_v_db.pinecone_api_client import pinecone_cli
 from pinecone_v_db.generate_embeddings import generate_embedding
 import asyncio
-
 from openai import OpenAI
 import asyncio
 from openai.types.responses import ResponseTextDeltaEvent
@@ -16,7 +15,6 @@ from pinecone_v_db.get_db_table import dense_get_db_table
 load_dotenv()
 session_db_name = os.getenv("session_db_name")
 session_con_user = os.getenv("session_con_user")
-
 session = SQLiteSession(session_con_user, session_db_name)
 
 
@@ -48,9 +46,7 @@ async def pdf_agent(input_prompt):
         instructions=(
             """
             You are a Retrieval-Augmented Generation (RAG) assistant.
-
             Your primary task is to answer user questions using the function tool named `query_pdf`.
-
             ### MANDATORY RULES:
             1. You must ALWAYS call the tool `query_pdf` before giving any answer.
             2. Pass the user's question exactly as received into the tool.
@@ -71,7 +67,6 @@ async def pdf_agent(input_prompt):
         tool_use_behavior="run_llm_again",
         model="gpt-4o-mini",
     )
-
     allocator_agent = Agent(
         name="Allocator",
         instructions=(
@@ -81,12 +76,9 @@ async def pdf_agent(input_prompt):
         handoffs=[rag_agent],
         model="gpt-5-mini",
     )
-
     print("Tools available:", rag_agent.tools)
-
     result = Runner.run_streamed(allocator_agent, input_prompt, session=session)
     print("Active Agent:", result.last_agent.name)
-
     async for event in result.stream_events():
         if event.type == "raw_response_event" and isinstance(
             event.data, ResponseTextDeltaEvent

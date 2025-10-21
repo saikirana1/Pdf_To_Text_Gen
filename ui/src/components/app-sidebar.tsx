@@ -12,85 +12,86 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
-import { Sun, Moon, MessageSquare, FileText } from "lucide-react";
+import { Sun, Moon, MessageSquare, FileText, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function AppSidebar() {
+    const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
-  useEffect(() => {
-    // Example: you can replace this with API call
-    const storedFiles = JSON.parse(
-      localStorage.getItem("uploadedFiles") || "[]",
-    );
-    setUploadedFiles(storedFiles);
-  }, []);
+  const items = [
+  {
+    title: "Chat",
+    url: "/chat",
+    icon: MessageSquare,
+    },
+    {
+    title: "Uploaded Files",
+    url: "/get_files",
+    icon:  FileText,
+    },
+    {
+    title: "Selected Files",
+    url: "/selected_files",
+    icon:  FileText,
+    },
+  ]
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
+  
 
   return (
     <Sidebar>
       <SidebarContent>
-        {/* === Main Navigation === */}
         <SidebarGroup>
           <SidebarGroupLabel>Teclusion</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/" className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Chat</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/get_files" className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    <span>Upload Files</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton className="flex items-center gap-2 px-3 py-2 rounded-md 
+           hover:bg-gray-200 dark:hover:bg-gray-800 
+           hover:text-gray-500 hover:scale-105 
+           transition-all duration-200" asChild>
+                    <Link  to={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* === Uploaded Files Section === */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Uploaded Files</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {uploadedFiles.length > 0 ? (
-                uploadedFiles.map((file, index) => (
-                  <SidebarMenuItem key={index}>
-                    <SidebarMenuButton asChild>
-                      <button className="flex items-center gap-2 text-left">
-                        <FileText className="w-4 h-4" />
-                        <span>{file}</span>
-                      </button>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground px-3">
-                  No files yet
-                </p>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+    
       </SidebarContent>
 
       <SidebarFooter className="p-2">
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="flex items-center justify-center w-10 h-10 border rounded-full bg-black text-white hover:bg-gray-500 dark:hover:bg-gray-800"
-        >
-          {theme === "dark" ? (
-            <Sun className="w-5 h-5" />
-          ) : (
-            <Moon className="w-5 h-5" />
-          )}
-        </button>
+        <div className="flex flex-row items-center justify-between gap-4 p-2">
+  {/* Theme Toggle Button */}
+  <button
+    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+    className="flex items-center justify-center w-10 h-10 border rounded-full bg-black text-white hover:bg-gray-500 dark:hover:bg-gray-800 transition"
+  >
+    {theme === "dark" ? (
+      <Sun className="w-5 h-5" />
+    ) : (
+      <Moon className="w-5 h-5" />
+    )}
+  </button>
+
+  {/* Logout Button */}
+  <button
+    onClick={handleLogout}
+    className="px-4 py-2 bg-zinc-400 text-white rounded-lg hover:bg-gray-600 transition"
+  >
+    LogOut
+  </button>
+</div>
+
       </SidebarFooter>
     </Sidebar>
   );
