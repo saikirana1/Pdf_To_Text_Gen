@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+
 import { Link } from "react-router-dom";
 import {
   Sidebar,
@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useTheme } from "next-themes";
-import { Sun, Moon, MessageSquare, FileText, Home } from "lucide-react";
+import { Sun, Moon, MessageSquare, FileText} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export function AppSidebar() {
