@@ -1,30 +1,41 @@
-import { Route, Routes } from 'react-router-dom'
-import './App.css'
-import Chat from './pages/Chat'
-import Login from './pages/Login'
-import UploadDocument from './pages/UploadDocument'
-import { Toaster } from 'react-hot-toast';
+import { Route, Routes, useLocation } from "react-router-dom";
+import "./app/globals.css";
+import "./App.css";
+import Chat from "./pages/Chat";
+import Login from "./pages/Login";
+import FileSelector from "./pages/FileSelector";
+import SelectedFiles from "./pages/SelectedFiles";
+import { Toaster } from "react-hot-toast";
+import { ThemeProvider } from "./components/theme-provider";
+import MainLayout from "./layouts/MainLayout";
 
 function App() {
+  const location = useLocation();
+
+  
+  const noSidebarRoutes = ["/"];
+
+  const isNoSidebar = noSidebarRoutes.includes(location.pathname);
 
   return (
-    <>
-    <div>
-      {/* <Navbar /> */}
-           <Toaster position="top-center" reverseOrder={false} />
-      <Routes>
-        {/* <Route path="/home" element={<Home />} /> */}
-        <Route path="/" element={<Login />} />
-        {/* <Route path="/logout" element={<Logout />} /> */}
-        <Route path="/upload_document" element={<UploadDocument />} />
-          <Route path="/chat" element={<Chat />} />
-        {/* <Route path="/signup" element={<SignUp />} /> */}
-      </Routes>
-    </div>
-    </>
-  )
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <Toaster position="top-center" reverseOrder={false} />
+      {isNoSidebar ? (
+        <Routes>
+          <Route path="/" element={<Login />} />
+        </Routes>
+      ) : (
+       
+        <MainLayout>
+          <Routes>
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/get_files" element={<FileSelector />} />
+            <Route path="/selected_files" element={<SelectedFiles />} />
+          </Routes>
+        </MainLayout>
+      )}
+    </ThemeProvider>
+  );
 }
 
-export default App
-
-
+export default App;

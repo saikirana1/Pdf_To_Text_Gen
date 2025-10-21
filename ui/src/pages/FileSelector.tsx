@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useCounterStore } from "../store";
+import { useNavigate } from "react-router-dom";
 
 interface File {
   id: string;
@@ -8,21 +9,30 @@ interface File {
   file_url: string;
 }
 
-interface FileButtonProps {
-  onSelectionChange?: (urls: string[]) => void;
-}
-
-const FileSelector = ({ onSelectionChange }: FileButtonProps) => {
+const FileSelector = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File }>({});
   const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-   const {status} = useCounterStore();
+  const { status, setFileDetails } = useCounterStore();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) navigate("/");
+  }, [navigate]);
   useEffect(() => {
     const fetchData = async () => {
       await fetchFiles();
     };
     fetchData();
   }, [status]);
+
+  useEffect(() => {
+    if (selectedFiles) {
+          setFileDetails?.(Object.values(selectedFiles));
+      }
+  
+  }, [selectedFiles]);
+  
 
   const fetchFiles = async () => {
     try {
@@ -52,10 +62,7 @@ const FileSelector = ({ onSelectionChange }: FileButtonProps) => {
     }
     setSelectedFiles(updated);
 
-    if (onSelectionChange) {
-      const urls = Object.values(updated).map(f => f.file_url);
-      onSelectionChange(urls);
-    }
+    
   };
 
   return (

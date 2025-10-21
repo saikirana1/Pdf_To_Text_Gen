@@ -5,25 +5,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import VoiceButton from "./VoiceButton";
-import FileSelector from "./FileSelector";
+
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 
-interface Message {
-  role: "user" | "assistant";
-  text: string;
-}
+
 function Chat() {
   const navigate = useNavigate();
   const [userQuestion, setUserQuestion] = useState("");
   const eventSourceRef = useRef<EventSource | null>(null);
-  const [chatData, setChatData] = useState<Message[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
+  
   const [enurls, setEnurls] = useState("");
   const [endpoint, setEndpoint] = useState("");
 
-  const { status, file, setFile, setStatus } = useCounterStore();
+  const { status, file, setFile, setStatus, files_urls, chatData, setChatData } = useCounterStore();
+  
   const [time, setTime] = useState(15);
 
   useEffect(() => {
@@ -78,32 +75,29 @@ function Chat() {
     };
   }, [file, status]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   useEffect(() => {
-    try {
-      const decodedUrls = decodeURIComponent(enurls || "%5B%5D"); // safely decode
-      const parsedUrls = JSON.parse(decodedUrls); // parse the JSON string
-
-      if (Array.isArray(parsedUrls) && parsedUrls.length > 0) {
+  try {
+    if (files_urls && files_urls.length > 0) {
+      const onlyUrls = files_urls.map((file) => file.file_url);
+      console.log("🧩 File URLs:", onlyUrls);
+      const encodedUrls = encodeURIComponent(JSON.stringify(onlyUrls));
+      setEnurls(encodedUrls);
+      if (encodedUrls) {
         setEndpoint("get_file_data");
-      } else {
-        setEndpoint("get_response");
       }
-    } catch (error) {
-      console.warn("Error decoding URLs:", error);
+      
+    } else {
       setEndpoint("get_response");
     }
-  }, [enurls]);
+  } catch (error) {
+    console.warn("Error decoding URLs:", error);
+    setEndpoint("get_response");
+  }
+  }, [files_urls]);
+  
+
+
   console.log(time);
 
   useEffect(() => {
@@ -154,16 +148,13 @@ function Chat() {
       setUserQuestion("");
     }
   };
-  const handleSelectedUrls = (urls: any) => {
-    // console.log("Selected file URLs for OpenAI:", urls);
-    const encodedUrls = encodeURIComponent(JSON.stringify(urls));
-    setEnurls(encodedUrls);
-  };
+ 
 
   console.log(enurls);
   const handle_onclick = () => {
     if (!userQuestion.trim()) return;
     setChatData((prev) => [...prev, { role: "user", text: userQuestion }]);
+    
     console.log(userQuestion);
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
@@ -205,20 +196,10 @@ function Chat() {
       }
     };
   }, []);
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+  
   return (
-    <div className="grid md:grid-cols-12 h-screen md:bg-zinc-900 bg-zinc-800">
-      {!isMobile && (
-        <div className="col-span-3 flex items-center justify-center text-white">
-          <FileSelector onSelectionChange={handleSelectedUrls} />
-        </div>
-      )}
-
-      <div className="col-span-6 flex flex-col bg-zinc-800 p-4 rounded-lg overflow-y-auto">
-        <AnimatePresence>
+    <div >
+      <AnimatePresence>
           {file && (
             <motion.div
               key="file-upload-status"
@@ -234,16 +215,9 @@ function Chat() {
             </motion.div>
           )}
         </AnimatePresence>
-        <div className="flex flex-col h-15">
-          <button
-            onClick={handleLogout}
-            className="absolute top-4 right-4 px-2 py-2 bg-zinc-400 text-white rounded-lg hover:bg-gray-600 transition"
-          >
-            LogOut
-          </button>
-        </div>
+        
 
-        <ul className="flex flex-col space-y-2 flex-1 mb-20">
+        <ul className="flex flex-col space-y-2 flex-1 mb-20 w-200">
           {chatData.map((item, index) => (
             <li
               key={index}
@@ -260,7 +234,7 @@ function Chat() {
             </li>
           ))}
         </ul>
-        <div className="bg-zinc-800 p-1 mt-2 rounded-2xl border border-zinc-600 flex h-10 fixed bottom-3 w-full md:w-1/2 left-1/2 -translate-x-1/2">
+         <div className="bg-zinc-800 p-1 mt-2 rounded-2xl border border-zinc-600 flex h-10 fixed bottom-3 w-full md:w-1/2 left-1/2 -translate-x-1/2">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -290,9 +264,7 @@ function Chat() {
             />
           </form>
         </div>
-      </div>
-      {!isMobile && <div className="col-span-3 pr-4 text-white"></div>}
-    </div>
+     </div> 
   );
 }
 

@@ -2,16 +2,16 @@ from pydantic import BaseModel
 from agents import Runner, Agent, function_tool, ModelSettings, SQLiteSession
 import asyncio
 from openai import OpenAI
-
 from .invoice_data_agent import invoice_data_agent
 from .pdf_agent import pdf_agent
 
 from .multi_agent_handoff import multi_agent_handoff
 from open_ai.synthesizing_data import synthesizing_data
-from typing import Optional,List,Tuple
-from data_model.main_agent import DocumentAGENT,InvoiceAgent,ReturnData,MainAgent
+from typing import Optional, List, Tuple
+from data_model.main_agent import DocumentAGENT, InvoiceAgent, ReturnData, MainAgent
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
 session_db_name = os.getenv("session_db_name")
 session_con_user = os.getenv("session_con_user")
@@ -27,16 +27,20 @@ class Query(BaseModel):
     query: str
 
 
-async def main_agent(input_prompt)->ReturnData:
+async def main_agent(input_prompt) -> ReturnData:
     bank_agent = Agent(
         name="BANK_AGENT",
         model="gpt-4o-mini",
-        instructions="""You are an expert in identifying questions related to bank transactions and bank-related queries.""",
+        instructions="""You are an expert in identifying questions related to bank transactions and bank-related queries.
+          and if quation contains the bank statement then use it 
+        
+        """,
         output_type=Query,
         handoff_description="""Use this agent if:
 - The question includes words like 'transaction', 'account number', 'balance', 'debit', 'credit', 'statement', or 'date'.
 - The question asks about money flow, transaction IDs, or transaction details on specific dates.
 - The question mentions a bank, account number, or customer name in relation to a transaction.
+if quation contains the bank statements then use this agent
 Example queries:
 - 'Show transactions on 2020-05-18 for account 024505005757'
 """,
@@ -49,18 +53,6 @@ Example queries:
         output_type=Result,
         handoff_description="""Use this agent if the question involves invoice ID or products; if query contains 'invoice', use this one.""",
     )
-
-    # document_agent = Agent(
-    #     name="DOCUMENT_AGENT",
-    #     model="gpt-5-nano",
-    #     instructions="""You are an expert in identifying questions related to documents . such as
-    #     any topic related to with out structured data """,
-    #     output_type=Result,
-    #     handoff_description="""Use this agent if the question involves documents , such as those using RAG (Retrieval-Augmented Generation).
-    #     with out structured data which relates to non tabular data then use this agent""",
-    # )
-
-
     allocator_agent = Agent(
         model="gpt-5-mini",
         name="Allocator",
@@ -68,7 +60,10 @@ Example queries:
         handoffs=[bank_agent, invoice_agent],
     )
 
-    result = await Runner.run(allocator_agent, input_prompt, session=session)
+    result = await Runner.run(
+        allocator_agent,
+        input_prompt,
+    )
 
     print("Active Agent:", result.last_agent.name)
     if result.last_agent.name == "BANK_AGENT":
@@ -83,13 +78,23 @@ Example queries:
                 sql_result=None,
                 sql_query=None,
             )
-        sql_agent=bank_account_result.model_dump()
-        if sql_agent.get("agent")=="SQL_AGENT":
-            print("i am from bank",sql_agent)
-            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
-        elif sql_agent.get("agent")=="RAG_AGENT":
-            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
-    
+        sql_agent = bank_account_result.model_dump()
+        if sql_agent.get("agent") == "SQL_AGENT":
+            print("i am from bank", sql_agent)
+            return MainAgent(
+                child_agent=sql_agent.get("agent"),
+                parent_agent=result.last_agent.name,
+                sql_result=sql_agent.get("sql_result"),
+                sql_query=sql_agent.get("sql_query"),
+            )
+        elif sql_agent.get("agent") == "RAG_AGENT":
+            return MainAgent(
+                child_agent=sql_agent.get("agent"),
+                parent_agent=result.last_agent.name,
+                sql_result=sql_agent.get("sql_result"),
+                sql_query=sql_agent.get("sql_query"),
+            )
+
     elif result.last_agent.name == "INVOICE_AGENT":
         invoice_result = await invoice_data_agent(input_prompt)
         if invoice_result is None:
@@ -102,11 +107,16 @@ Example queries:
                 sql_query=None,
             )
         print("invoice_agent ------------------>", invoice_result)
-        sql_agent=invoice_result.model_dump()
-        if sql_agent.get("agent")=="SQL_AGENT":
-            print("i am from invoice",sql_agent)
-            return MainAgent(child_agent=sql_agent.get("agent"),parent_agent=result.last_agent.name,sql_result=sql_agent.get("sql_result"),sql_query=sql_agent.get("sql_query"))
-        elif sql_agent.get("agent")=="RAG_AGENT":
+        sql_agent = invoice_result.model_dump()
+        if sql_agent.get("agent") == "SQL_AGENT":
+            print("i am from invoice", sql_agent)
+            return MainAgent(
+                child_agent=sql_agent.get("agent"),
+                parent_agent=result.last_agent.name,
+                sql_result=sql_agent.get("sql_result"),
+                sql_query=sql_agent.get("sql_query"),
+            )
+        elif sql_agent.get("agent") == "RAG_AGENT":
             return MainAgent(
                 child_agent=sql_agent.get("agent"),
                 parent_agent=result.last_agent.name,
@@ -117,4 +127,3 @@ Example queries:
     else:
         print("i am else ----------------------->document agent")
         return MainAgent(child_agent="RAG_AGENT", parent_agent="DOCUMENT_AGENT")
-    

@@ -4,7 +4,6 @@ from pinecone_v_db.get_db_table import get_db_table
 from pinecone_v_db.pinecone_api_client import pinecone_cli
 from pinecone_v_db.generate_embeddings import generate_embedding
 import asyncio
-
 from openai import OpenAI
 import asyncio
 from openai.types.responses import ResponseTextDeltaEvent
@@ -16,7 +15,6 @@ from pinecone_v_db.get_db_table import dense_get_db_table
 load_dotenv()
 session_db_name = os.getenv("session_db_name")
 session_con_user = os.getenv("session_con_user")
-
 session = SQLiteSession(session_con_user, session_db_name)
 
 
@@ -46,31 +44,41 @@ async def pdf_agent(input_prompt):
     rag_agent = Agent(
         name="RAG_AGENT",
         instructions=(
-            """you should run the tool call and 
-            based on tool call data give response
-            You Should run the function_tool
+            """
+            You are a Retrieval-Augmented Generation (RAG) assistant.
+            Your primary task is to answer user questions using the function tool named `query_pdf`.
+            ### MANDATORY RULES:
+            1. You must ALWAYS call the tool `query_pdf` before giving any answer.
+            2. Pass the user's question exactly as received into the tool.
+            3. Wait for the tool response and carefully analyze its metadata or text.
+            4. Generate your final answer **only** using the data returned by the tool.
+            5. If the tool returns no relevant results, reply exactly:
+               "No related information found in the document."
+            6. Never guess, assume, or use your own knowledge.
+            7. Do not skip the tool call under any condition.
             """
         ),
         tools=[query_pdf],
-        handoff_description="""
-        based on tool call response give the better sentences
-        any quation run this agent and also run the tool call 
-        """,
+        handoff_description=(
+            "When a user asks any question, first use the `query_pdf` tool to fetch data "
+            "from the document, then respond using the information from that tool only."
+        ),
         model_settings=ModelSettings(tool_choice="required"),
         tool_use_behavior="run_llm_again",
         model="gpt-4o-mini",
     )
     allocator_agent = Agent(
         name="Allocator",
-        instructions="Forward queries to the appropriate agent based on topic.",
+        instructions=(
+            "You are a routing agent. Always forward the user's query directly to RAG_AGENT. "
+            "Never respond on your own or modify the query."
+        ),
         handoffs=[rag_agent],
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
     )
-
-    result = Runner.run_streamed(allocator_agent, input_prompt)
-
+    print("Tools available:", rag_agent.tools)
+    result = Runner.run_streamed(allocator_agent, input_prompt, session=session)
     print("Active Agent:", result.last_agent.name)
-
     async for event in result.stream_events():
         if event.type == "raw_response_event" and isinstance(
             event.data, ResponseTextDeltaEvent

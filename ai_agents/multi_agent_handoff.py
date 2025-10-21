@@ -83,7 +83,7 @@ you should use invoiced or any unique key then use in sql query do't put empty""
 
     rag_agent = Agent(
         name="RAG_AGENT",
-        model="gpt-5-nano",
+        model="gpt-4o-mini",
         instructions=(
             """You are a retrieval agent.
 Use external data retrieval tools (RAG) when the question involves 
@@ -106,7 +106,7 @@ or mentions names/company names to find similar transactions
    
 
     allocator_agent = Agent(
-        model="gpt-5-nano",
+        model="gpt-5-mini",
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
         handoffs=[sql_agent, rag_agent],
