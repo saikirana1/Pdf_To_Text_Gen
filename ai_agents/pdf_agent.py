@@ -67,13 +67,33 @@ async def pdf_agent(input_prompt):
         tool_use_behavior="run_llm_again",
         model="gpt-4o-mini",
     )
+    casual_agent=Agent(
+        
+         name="CASUAL_AGENT",
+        instructions=(
+            """
+            You are a casual agent. 
+            If the user says 'hi', 'hello', or 'how are you', respond politely.
+            For any other type of query, do not respond and let other agents handle it.
+            """
+        ),
+        tools=[query_pdf],
+        handoff_description=(
+            """When a user asks any question, related hi, how are you  then simple respond """
+        ),
+       
+        model="gpt-4o-mini",
+        
+        
+        
+    )
     allocator_agent = Agent(
         name="Allocator",
         instructions=(
-            "You are a routing agent. Always forward the user's query directly to RAG_AGENT. "
-            "Never respond on your own or modify the query."
+           "You are a routing agent. Forward simple greetings to CASUAL_AGENT "
+            "and all other questions to RAG_AGENT."
         ),
-        handoffs=[rag_agent],
+        handoffs=[rag_agent,casual_agent],
         model="gpt-5-mini",
     )
     print("Tools available:", rag_agent.tools)
