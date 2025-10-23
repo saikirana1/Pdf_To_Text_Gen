@@ -235,7 +235,13 @@ function Chat() {
           </li>
         ))}
       </ul>
-      <div className="bg-zinc-800 p-1 mt-2 rounded-2xl border border-zinc-600 flex h-10 fixed bottom-3 left-1/2 transform -translate-x-1/3 w-full md:w-1/2">
+      <div
+        className="
+    bg-zinc-800 p-1 mt-2 rounded-2xl border border-zinc-600 flex h-10
+    fixed bottom-3 left-0 w-full
+    md:left-1/2 md:transform md:-translate-x-1/3 md:w-1/2
+  "
+      >
         <form
           onSubmit={(e) => {
             e.preventDefault();
