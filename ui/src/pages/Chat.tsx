@@ -10,17 +10,24 @@ import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 
-
 function Chat() {
   const navigate = useNavigate();
   const [userQuestion, setUserQuestion] = useState("");
   const eventSourceRef = useRef<EventSource | null>(null);
-  
+
   const [enurls, setEnurls] = useState("");
   const [endpoint, setEndpoint] = useState("");
 
-  const { status, file, setFile, setStatus, files_urls, chatData, setChatData } = useCounterStore();
-  
+  const {
+    status,
+    file,
+    setFile,
+    setStatus,
+    files_urls,
+    chatData,
+    setChatData,
+  } = useCounterStore();
+
   const [time, setTime] = useState(15);
 
   useEffect(() => {
@@ -75,28 +82,24 @@ function Chat() {
     };
   }, [file, status]);
 
-
   useEffect(() => {
-  try {
-    if (files_urls && files_urls.length > 0) {
-      const onlyUrls = files_urls.map((file) => file.file_url);
-      console.log("🧩 File URLs:", onlyUrls);
-      const encodedUrls = encodeURIComponent(JSON.stringify(onlyUrls));
-      setEnurls(encodedUrls);
-      if (encodedUrls) {
-        setEndpoint("get_file_data");
+    try {
+      if (files_urls && files_urls.length > 0) {
+        const onlyUrls = files_urls.map((file) => file.file_url);
+        console.log("🧩 File URLs:", onlyUrls);
+        const encodedUrls = encodeURIComponent(JSON.stringify(onlyUrls));
+        setEnurls(encodedUrls);
+        if (encodedUrls) {
+          setEndpoint("get_file_data");
+        }
+      } else {
+        setEndpoint("get_response");
       }
-      
-    } else {
+    } catch (error) {
+      console.warn("Error decoding URLs:", error);
       setEndpoint("get_response");
     }
-  } catch (error) {
-    console.warn("Error decoding URLs:", error);
-    setEndpoint("get_response");
-  }
   }, [files_urls]);
-  
-
 
   console.log(time);
 
@@ -122,7 +125,7 @@ function Chat() {
 
       const encodedQuestion = encodeURIComponent(userQuestion);
       const eventSource = new EventSource(
-        `${VITE_BACKEND_URL}/get_response?user_question=${encodedQuestion}`,
+        `${VITE_BACKEND_URL}/get_response?user_question=${encodedQuestion}`
       );
 
       eventSource.onopen = () => {
@@ -148,13 +151,12 @@ function Chat() {
       setUserQuestion("");
     }
   };
- 
 
   console.log(enurls);
   const handle_onclick = () => {
     if (!userQuestion.trim()) return;
     setChatData((prev) => [...prev, { role: "user", text: userQuestion }]);
-    
+
     console.log(userQuestion);
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
@@ -163,7 +165,7 @@ function Chat() {
     const encodedQuestion = encodeURIComponent(userQuestion);
     const eventSource = new EventSource(
       `${VITE_BACKEND_URL}/${endpoint}?user_question=${encodedQuestion}&urls=${enurls}`,
-      {},
+      {}
     );
 
     eventSource.onopen = () => {
@@ -196,75 +198,74 @@ function Chat() {
       }
     };
   }, []);
-  
+
   return (
-    <div >
+    <div>
       <AnimatePresence>
-          {file && (
-            <motion.div
-              key="file-upload-status"
-              initial={{ opacity: 0, y: -30, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -30, scale: 0.9 }}
-              transition={{ duration: 0.4, type: "spring" }}
-              className="bg-zinc-400 flex items-center justify-center rounded-lg mb-4 shadow-lg shadow-zinc-700"
-            >
-              <h1 className="inline-block text-zinc-900 font-semibold text-center text-lg animate-pulse">
-                Preparing data...
-              </h1>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-
-        <ul className="flex flex-col space-y-2 flex-1 mb-20 w-200">
-          {chatData.map((item, index) => (
-            <li
-              key={index}
-              className={`p-3 rounded-lg max-w-[80%] break-words ${
-                item.role === "user"
-                  ? "text-white self-end text-right bg-zinc-900"
-                  : "text-white self-start text-left bg-zinc-900"
-              }`}
-            >
-              <strong>{item.role === "user" ? "User" : "AI"}:</strong>{" "}
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-                {item.text.replace(/\|\|/g, "|")}
-              </ReactMarkdown>
-            </li>
-          ))}
-        </ul>
-         <div className="bg-zinc-800 p-1 mt-2 rounded-2xl border border-zinc-600 flex h-10 fixed bottom-3 w-full md:w-1/2 left-1/2 -translate-x-1/2">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handle_onclick();
-            }}
-            className="flex w-full"
+        {file && (
+          <motion.div
+            key="file-upload-status"
+            initial={{ opacity: 0, y: -30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -30, scale: 0.9 }}
+            transition={{ duration: 0.4, type: "spring" }}
+            className="bg-zinc-400 flex items-center justify-center rounded-lg mb-4 shadow-lg shadow-zinc-700"
           >
-            <input
-              type="text"
-              className="w-full h-full p-3 outline-none bg-transparent text-white overflow-auto"
-              placeholder="Ask me anything..."
-              onChange={(e) => setUserQuestion(e.target.value)}
-              value={userQuestion}
-            />
+            <h1 className="inline-block text-zinc-900 font-semibold text-center text-lg animate-pulse">
+              Preparing data...
+            </h1>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            <button
-              type="submit"
-              className="px-4 bg-zinc-500 rounded-2xl text-white hover:bg-zinc-400 transition"
-            >
-              Ask
-            </button>
-            {!userQuestion && <FileUpload />}
+      <ul className="flex flex-col space-y-2 flex-1 mb-25 w-full max-w-[700px] mx-auto">
+        {chatData.map((item, index) => (
+          <li
+            key={index}
+            className={`p-3 rounded-lg max-w-[80%] break-words ${
+              item.role === "user"
+                ? "text-white self-end text-right bg-zinc-900"
+                : "text-white self-start text-left bg-zinc-900"
+            }`}
+          >
+            <strong>{item.role === "user" ? "User" : "AI"}:</strong>{" "}
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+              {item.text.replace(/\|\|/g, "|")}
+            </ReactMarkdown>
+          </li>
+        ))}
+      </ul>
+      <div className="bg-zinc-800 p-1 mt-2 rounded-2xl border border-zinc-600 flex h-10 fixed bottom-3 left-1/2 transform -translate-x-1/3 w-full md:w-1/2">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handle_onclick();
+          }}
+          className="flex w-full"
+        >
+          <input
+            type="text"
+            className="w-full h-full p-3 outline-none bg-transparent text-white overflow-auto"
+            placeholder="Ask me anything..."
+            onChange={(e) => setUserQuestion(e.target.value)}
+            value={userQuestion}
+          />
 
-            <VoiceButton
-              onMicClick={handleMicClick}
-              onTranscribe={(text: any) => setUserQuestion(text)}
-            />
-          </form>
-        </div>
-     </div> 
+          <button
+            type="submit"
+            className="px-4 bg-zinc-500 rounded-2xl text-white hover:bg-zinc-400 transition"
+          >
+            Ask
+          </button>
+          {!userQuestion && <FileUpload />}
+
+          <VoiceButton
+            onMicClick={handleMicClick}
+            onTranscribe={(text: any) => setUserQuestion(text)}
+          />
+        </form>
+      </div>
+    </div>
   );
 }
 
