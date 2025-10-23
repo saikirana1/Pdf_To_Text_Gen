@@ -114,29 +114,34 @@ async def upload_file(file: UploadFile = File(...)):
             f.write(pdf_bytes)
         print("file type is", file_extension)
         two_pages_data = extract_pages(f"demo{file_extension}")
-        agent_result = await data_decison_agent(two_pages_data)
-        agent = agent_result.model_dump().get("agent")
-        print(type(agent))
-        if agent == "BANK_DATA_AGENT":
-            table_data = pdf_to_json(f"demo{file_extension}", skip_columns=None)
-            plan_text = extract_plain_text_outside_tables(f"demo{file_extension}")
-            result = pdf_to_json_data_extract(table_data, plan_text)
-            print("extracted result is", result)
+        
+        print("two_pages_data==============>",two_pages_data)
+        if two_pages_data:
+            agent_result = await data_decison_agent(two_pages_data)
+            agent = agent_result.model_dump().get("agent")
+            print(type(agent))
+            if agent == "BANK_DATA_AGENT":
+                table_data = pdf_to_json(f"demo{file_extension}", skip_columns=None)
+                plan_text = extract_plain_text_outside_tables(f"demo{file_extension}")
+                result = pdf_to_json_data_extract(table_data, plan_text)
+                print("extracted result is", result)
 
-        elif agent == "INVOICE_AGENT":
-            print("i am in invoice agent elif===========>")
-            result = invoice_pdf_json(f"demo{file_extension}")
-        elif agent == "NORMAL_DATA_AGENT":
-            data = create_pdf_embedings_dense(f"demo{file_extension}")
-            print("--------------------------------------")
-            print(data)
-            result = insert_records_dense(data)
-            print(
-                "extracted result is",
-            )
+            elif agent == "INVOICE_AGENT":
+                print("i am in invoice agent elif===========>")
+                result = invoice_pdf_json(f"demo{file_extension}")
+            else:
+                data = create_pdf_embedings_dense(f"demo{file_extension}")
+                print("--------------------------------------agent == NORMAL_DATA_AGENT")
+                print(data)
+                result = insert_records_dense(data)
+                print(
+                    "extracted result is",
+                )
+            
         two_pages_data = {"message": "File processed successfully"}
 
     except Exception as e:
+        print(e)
         return {"status": "error", "result": "sd"}
     return {
         "status": "success",

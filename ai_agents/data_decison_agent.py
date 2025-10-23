@@ -15,7 +15,7 @@ class Result(BaseModel):
 async def data_decison_agent(input_prompt: str):
     bank_agent = Agent(
         name="BANK_DATA_AGENT",
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
         instructions="""
         You are an expert at identifying data related to transactions,
         including debit and credit details.
@@ -28,7 +28,7 @@ async def data_decison_agent(input_prompt: str):
     )
     invoice_agent = Agent(
         name="INVOICE_AGENT",
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
         instructions="""
         You are an expert at identifying invoice-related data,
         including invoice IDs and item/product details.
@@ -42,7 +42,7 @@ async def data_decison_agent(input_prompt: str):
     )
     normal_data_agent = Agent(
         name="NORMAL_DATA_AGENT",
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
         instructions="""
         You are an expert at identifying and extracting structured and semi-structured information 
     from documents. This includes:
@@ -62,7 +62,7 @@ async def data_decison_agent(input_prompt: str):
         tool_use_behavior="stop_on_first_tool",
     )
     allocator_agent = Agent(
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
         handoffs=[bank_agent, invoice_agent, normal_data_agent],
