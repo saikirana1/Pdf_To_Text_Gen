@@ -8,19 +8,28 @@ import {
   Container,
   CssBaseline,
   Paper,
-  CircularProgress
+  CircularProgress,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+interface PassTypes {
+  status: boolean;
+}
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState<PassTypes>({
+    status: false,
+  });
   const navigate = useNavigate();
- let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+  let VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
@@ -48,13 +57,20 @@ export default function Login() {
       setLoading(false);
     }
   };
-
+  console.log(showPassword.status);
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <Paper
         elevation={6}
-        sx={{ p: 4, mt: 8, display: "flex", flexDirection: "column", alignItems: "center", borderRadius: 3 }}
+        sx={{
+          p: 4,
+          mt: 8,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          borderRadius: 3,
+        }}
       >
         <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
           <LockOutlinedIcon />
@@ -78,11 +94,28 @@ export default function Login() {
             required
             fullWidth
             label="Password"
-            type="password"
+            type={showPassword.status ? "text" : "password"}
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() =>
+                        setShowPassword({ status: !showPassword.status })
+                      }
+                      edge="end"
+                    >
+                      {showPassword.status ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
+
           {error && (
             <Typography color="error" variant="body2" sx={{ mt: 1 }}>
               {error}
@@ -92,11 +125,11 @@ export default function Login() {
             type="submit"
             fullWidth
             variant="contained"
-            disabled={loading} 
+            disabled={loading}
             sx={{ mt: 3, mb: 2, borderRadius: 2, position: "relative" }}
           >
             {loading ? (
-              <CircularProgress size={24} color="inherit" /> 
+              <CircularProgress size={24} color="inherit" />
             ) : (
               "Sign In"
             )}
