@@ -22,3 +22,4 @@ mcp_server
 json_data
 invoice-pdf
 data_model/__pycache__
+venv

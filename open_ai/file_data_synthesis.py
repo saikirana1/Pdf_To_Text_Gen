@@ -22,6 +22,7 @@ load_dotenv()
 
 
 async def file_data_synthesis(input_question, urls):
+    print("i am gpt 4")
     rag_agent = Agent(
         name="RAG_AGENT",
         instructions=(
