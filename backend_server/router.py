@@ -182,6 +182,7 @@ def get_all_files():
 async def get_responses(request: Request):
     user_question = request.query_params.get("user_question", "")
     urls_param = request.query_params.get("urls", "[]")
+    print(urls_param,"urls_param=====================>")
     file_urls = json.loads(urls_param)
 
     return StreamingResponse(
