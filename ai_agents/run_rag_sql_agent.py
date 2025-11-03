@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from data_model.run_rag_sql_model import SqlRagaent
 load_dotenv()
-
+main_agent_model=os.getenv("main_agent_model")
+child_agent_model=os.getenv("openai_model")
 class Result(BaseModel):
     answer: str
 
@@ -18,7 +19,7 @@ class Query(BaseModel):
 
 async def run_rag_agent(quation,answer):
     sql_agent = Agent(
-        model='gpt-4o-mini',
+        model=child_agent_model,
         name="SQL_AGENT",
         instructions="""You are an expert at writing SQL queries for PostgreSQL database with the following schema:
            CREATE TABLE transaction (   

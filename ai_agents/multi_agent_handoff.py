@@ -4,13 +4,15 @@ from pinecone_v_db.get_db_table import get_db_table
 from pinecone_v_db.pinecone_api_client import pinecone_cli
 from database_sql.query_data import query_data
 import asyncio
+import os
 from dotenv import load_dotenv
 from openai import OpenAI
 from .run_rag_sql_agent import run_rag_agent
 from data_model.multi_agent_handoff import SqlRagaent
 
 load_dotenv()
-
+main_agent_model=os.getenv("main_agent_model")
+child_agent_model=os.getenv("openai_model")
 
 @function_tool
 def query_text(text: str) -> dict:
@@ -41,7 +43,7 @@ class Query(BaseModel):
 async def multi_agent_handoff(input_prompt):
     sql_agent = Agent(
         name="SQL_AGENT",
-        model="gpt-4o-mini",
+        model=child_agent_model,
         instructions="""You are an expert at writing SQL queries for PostgreSQL database with the following schema:
            CREATE TABLE account (
     account_number UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
@@ -83,7 +85,7 @@ you should use invoiced or any unique key then use in sql query do't put empty""
 
     rag_agent = Agent(
         name="RAG_AGENT",
-        model="gpt-4o-mini",
+        model=child_agent_model,
         instructions=(
             """You are a retrieval agent.
 Use external data retrieval tools (RAG) when the question involves 
@@ -106,7 +108,7 @@ or mentions names/company names to find similar transactions
    
 
     allocator_agent = Agent(
-        model="gpt-5-mini",
+        model=main_agent_model,
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
         handoffs=[sql_agent, rag_agent],

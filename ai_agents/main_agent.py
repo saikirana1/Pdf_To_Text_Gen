@@ -17,7 +17,8 @@ session_db_name = os.getenv("session_db_name")
 session_con_user = os.getenv("session_con_user")
 
 session = SQLiteSession(session_con_user, session_db_name)
-
+main_agent_model=os.getenv("main_agent_model")
+child_agent_model=os.getenv("openai_model")
 
 class Result(BaseModel):
     answer: str
@@ -30,7 +31,7 @@ class Query(BaseModel):
 async def main_agent(input_prompt) -> ReturnData:
     bank_agent = Agent(
         name="BANK_AGENT",
-        model="gpt-4o-mini",
+        model=child_agent_model,
         instructions="""You are an expert in identifying questions related to bank transactions and bank-related queries.
           and if quation contains the bank statement then use it 
         
@@ -48,13 +49,13 @@ Example queries:
 
     invoice_agent = Agent(
         name="INVOICE_AGENT",
-        model="gpt-4o-mini",
+        model=child_agent_model,
         instructions="""You are an expert in identifying questions related to invoice data or queries related to invoice data.""",
         output_type=Result,
         handoff_description="""Use this agent if the question involves invoice ID or products; if query contains 'invoice', use this one.""",
     )
     allocator_agent = Agent(
-        model="gpt-5-mini",
+        model=main_agent_model,
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on input quation.",
         handoffs=[bank_agent, invoice_agent],

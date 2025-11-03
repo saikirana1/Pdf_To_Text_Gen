@@ -8,9 +8,10 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from .run_invoice_sql_agnet import run_rag_agent
 from data_model.invoice_data_agent import InvoiceAgent
-
+import os
 load_dotenv()
-
+main_agent_model=os.getenv("main_agent_model")
+child_agent_model=os.getenv("openai_model")
 
 class Result(BaseModel):
     answer: str
@@ -23,7 +24,7 @@ class Query(BaseModel):
 async def invoice_data_agent(input_prompt):
     sql_agent = Agent(
         name="SQL_AGENT",
-        model="gpt-4o-mini",
+        model=child_agent_model,
         instructions="""You are an expert at writing SQL queries for a PostgreSQL database.
 Below is the database schema:
 you should use invoiced or any unique key then use in sql query do't put empty
@@ -112,7 +113,7 @@ you should use invoiced or any unique key then use in sql query do't put empty
 
     rag_agent = Agent(
         name="RAG_AGENT",
-        model="gpt-4o-mini",
+        model=child_agent_model,
         instructions=(
             """
 You are a retrieval agent.
@@ -144,7 +145,7 @@ you should use the user asking about single invoice number details then use it
     )
 
     allocator_agent = Agent(
-        model="gpt-5-mini",
+        model=main_agent_model,
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
         handoffs=[sql_agent, rag_agent],

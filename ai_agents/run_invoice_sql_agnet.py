@@ -11,7 +11,8 @@ import os
 
 
 load_dotenv()
-
+main_agent_model=os.getenv("main_agent_model")
+child_agent_model=os.getenv("openai_model")
 
 class Result(BaseModel):
     answer: str
@@ -24,7 +25,7 @@ class Query(BaseModel):
 async def run_rag_agent(input_prompt,name):
     sql_agent = Agent(
         name="SQL_AGENT",
-        model='gpt-4o-mini',
+        model=child_agent_model,
         instructions="""You are an expert at writing SQL queries for PostgreSQL database with the following schema:
            CREATE TABLE invoice (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -64,7 +65,7 @@ CREATE TABLE item (
     
 
     allocator_agent = Agent(
-        model='gpt-4o-mini',
+        model=child_agent_model,
         name="Allocator",
         instructions="Forward queries to the appropriate agent based on topic.",
         handoffs=[sql_agent],

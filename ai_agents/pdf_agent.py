@@ -16,7 +16,8 @@ load_dotenv()
 session_db_name = os.getenv("session_db_name")
 session_con_user = os.getenv("session_con_user")
 session = SQLiteSession(session_con_user, session_db_name)
-
+main_agent_model=os.getenv("main_agent_model")
+child_agent_model=os.getenv("openai_model")
 
 @function_tool
 def query_pdf(question: str) -> dict:
@@ -65,7 +66,7 @@ async def pdf_agent(input_prompt):
         ),
         model_settings=ModelSettings(tool_choice="required"),
         tool_use_behavior="run_llm_again",
-        model="gpt-4o-mini",
+        model=child_agent_model,
     )
     casual_agent=Agent(
         
@@ -82,7 +83,7 @@ async def pdf_agent(input_prompt):
             """When a user asks any question, related hi, how are you  then simple respond """
         ),
        
-        model="gpt-4o-mini",
+        model=child_agent_model,
         
         
         
@@ -94,7 +95,7 @@ async def pdf_agent(input_prompt):
             "and all other questions to RAG_AGENT."
         ),
         handoffs=[rag_agent,casual_agent],
-        model="gpt-5-mini",
+        model=main_agent_model,
     )
     print("Tools available:", rag_agent.tools)
     result = Runner.run_streamed(allocator_agent, input_prompt, session=session)
