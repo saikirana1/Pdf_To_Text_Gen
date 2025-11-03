@@ -12,20 +12,23 @@ import MainLayout from "./layouts/MainLayout";
 function App() {
   const location = useLocation();
 
-  
   const noSidebarRoutes = ["/"];
 
   const isNoSidebar = noSidebarRoutes.includes(location.pathname);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      storageKey="vite-ui-theme"
+    >
       <Toaster position="top-center" reverseOrder={false} />
       {isNoSidebar ? (
         <Routes>
           <Route path="/" element={<Login />} />
         </Routes>
       ) : (
-       
         <MainLayout>
           <Routes>
             <Route path="/chat" element={<Chat />} />

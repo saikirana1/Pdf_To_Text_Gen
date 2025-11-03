@@ -4,7 +4,7 @@ from supabase import create_client
 from dotenv import load_dotenv
 import os
 import asyncio
-from database_sql.insert_and_get_file_data import (
+from database_sql.file import (
     insert_file_record,
 )
 

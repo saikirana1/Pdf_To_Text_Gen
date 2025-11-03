@@ -24,15 +24,18 @@ from open_ai.pdf_to_json_data_extract import pdf_to_json_data_extract
 
 import os
 from open_ai.invoice_pdf_to_json import invoice_pdf_json
-
 from supabase_packages.upload_file import upload_file_to_supabase
-from database_sql.insert_and_get_file_data import (
+from database_sql.file import (
     insert_file_record,
     get_all_files_from_db,
+    delete_file_from_db,
 )
 from open_ai.create_pdf_embedings import create_pdf_embedings_dense
 from pinecone_v_db.insert_records_dense import insert_records_dense
 from open_ai.client import openai_client
+
+from database_sql.models import FileData
+
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 client = openai_client()
 router = APIRouter()
@@ -149,7 +152,7 @@ async def upload_file(file: UploadFile = File(...)):
     }
 
 
-@router.post("/upload_file")
+@router.post("/file")
 async def upload(file: UploadFile = File(...)):
     try:
         contents = await file.read()
@@ -173,10 +176,15 @@ async def upload(file: UploadFile = File(...)):
         return {"error": str(e), "status": "error"}
 
 
-@router.get("/get_files")
+@router.get("/files",response_model=list[FileData])
 def get_all_files():
-    return get_all_files_from_db()
+    files=get_all_files_from_db()
+    return files
 
+@router.delete("/files/{file_id}")
+def delete_file(file_id: str):
+    delete_file_from_db(file_id)
+    return {"message": f"File with ID {file_id} has been deleted."}
 
 @router.get("/get_file_data")
 async def get_responses(request: Request):
