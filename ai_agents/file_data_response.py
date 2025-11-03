@@ -25,7 +25,8 @@ def pdf_data_urls(prompt:str,urls:list):
 async def file_data_response(prompt,urls):
       doc_urls_prompt=pdf_data_urls(prompt,urls)
       response = client.models.generate_content_stream(
-        model="gemini-2.5-flash",
+        model="gemini-2.5-flash-lite",
+        
         contents= doc_urls_prompt)
       for chunk in response:
        print(chunk.text,end="",flush=True)
