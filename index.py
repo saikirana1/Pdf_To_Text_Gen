@@ -8,7 +8,7 @@ from backend_server import auth
 
 from fastapi.responses import JSONResponse
 from backend_server.auth import verify_token
-from fastapi_pagination import Page, add_pagination, paginate
+
 from pydantic import BaseModel
 
 app = FastAPI()
