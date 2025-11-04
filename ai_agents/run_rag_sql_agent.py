@@ -6,6 +6,7 @@ import asyncio
 from dotenv import load_dotenv
 from openai import OpenAI
 from data_model.run_rag_sql_model import SqlRagaent
+import os
 load_dotenv()
 main_agent_model=os.getenv("main_agent_model")
 child_agent_model=os.getenv("openai_model")

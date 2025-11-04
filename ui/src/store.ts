@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 interface CounterState {
+  page: number;
   themeStatus: string;
   status: string;
   files_urls: File[];
@@ -18,6 +19,7 @@ interface CounterState {
   setError: (value: string) => void;
   setLoading: (value: boolean) => void;
   setThemeStatus: (value: string) => void;
+  setPage: (value: number) => void;
 }
 interface Message {
   role: "user" | "assistant";
@@ -35,6 +37,7 @@ export interface ChooseFile {
 }
 
 export const useCounterStore = create<CounterState>((set) => ({
+  page: 1,
   themeStatus: "light",
   isloading: false,
   error: "",
@@ -69,7 +72,9 @@ export const useCounterStore = create<CounterState>((set) => ({
     })),
   setError: (value: string) => set({ error: value }),
   setLoading: (value: boolean) => set({ isloading: value }),
-  // addMessage: (message: Message) =>
-  //   set((state) => ({ chatData: [...state.chatData, message] })),
   setThemeStatus: (value: string) => set({ themeStatus: value }),
+  setPage: (value: number | ((prev: number) => number)) =>
+    set((state) => ({
+      page: typeof value === "function" ? value(state.page) : value,
+    })),
 }));

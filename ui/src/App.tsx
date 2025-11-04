@@ -38,6 +38,7 @@ function App() {
         </MainLayout>
       )}
     </ThemeProvider>
+    // <PaginationDemo />
   );
 }
 

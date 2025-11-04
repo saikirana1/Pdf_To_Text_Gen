@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from .models import FileData
 from datetime import date, datetime
 from sqlmodel import select
+from sqlalchemy import func
 
 
 @contextmanager
@@ -11,11 +12,13 @@ def get_db_session():
     yield from get_session()
 
 
-def get_all_files_from_db():
+def get_all_files_from_db(offset: int, limit: int):
     with get_db_session() as session:
-        statement = select(FileData)
-        return session.exec(statement).all()
-    
+       files = session.exec(select(FileData).offset(offset).limit(limit)).all()
+       total = session.exec(select(func.count()).select_from(FileData)).one()
+       print(f"Total files in DB: {total}")
+       return total, files
+
 def delete_file_from_db(file_id: str):
     with get_db_session() as session:
         try:

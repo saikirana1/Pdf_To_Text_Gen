@@ -16,6 +16,8 @@ from .event_generator import (
     event_generator_rag,
     event_generator_file,
 )
+from math import ceil
+from typing import List
 from ai_agents.data_decison_agent import data_decison_agent
 from clean_pdf_data.extract_pages import extract_pages
 from clean_pdf_data.pdf_json_data import pdf_to_json
@@ -35,6 +37,7 @@ from pinecone_v_db.insert_records_dense import insert_records_dense
 from open_ai.client import openai_client
 
 from database_sql.models import FileData
+
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 client = openai_client()
@@ -175,11 +178,31 @@ async def upload(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": str(e), "status": "error"}
 
+class FileListResponse(BaseModel):
+    total_records: int
+    total_pages: int
+    current_page: int
+    offset: int
+    limit: int
+    files: List[FileData]
+@router.get("/files", response_model=FileListResponse)
+def get_all_files(
+    offset: int = Query(default=0, ge=0),
+    limit: int = Query(default=5, le=10)
+):
+      total,files= get_all_files_from_db(offset, limit)
+      total_pages = ceil(total / limit) if total > 0 else 1
+      current_page = (offset // limit) + 1
+      return {
+        
+            "total_records": total,
+            "total_pages": total_pages,
+            "current_page": current_page,
+            "offset": offset,
+            "limit": limit,
+            "files": files
+        }
 
-@router.get("/files",response_model=list[FileData])
-def get_all_files():
-    files=get_all_files_from_db()
-    return files
 
 @router.delete("/files/{file_id}")
 def delete_file(file_id: str):

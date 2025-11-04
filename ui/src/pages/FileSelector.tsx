@@ -12,7 +12,15 @@ import {
   CardTitle,
   CardHeader,
 } from "@/components/ui/card";
-
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
@@ -22,14 +30,24 @@ interface File {
   file_url: string;
 }
 
+interface PaginatedFilesResponse {
+  files: File[];
+  total_records: number;
+  total_pages: number;
+  current_page: number;
+  offset: number;
+  limit: number;
+}
+
 const FileSelector = () => {
   const [selectedFiles, setSelectedFiles] = useState<{ [key: string]: File }>(
     {}
   );
   const [items, setItems] = useState<File[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const { status, setFileDetails } = useCounterStore();
+  const { status, setFileDetails, page, setPage } = useCounterStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -42,78 +60,72 @@ const FileSelector = () => {
     if (selectedFiles) {
       setFileDetails?.(Object.values(selectedFiles));
     }
-  }, [selectedFiles]);
+  }, [selectedFiles, setFileDetails]);
 
   const fetchFiles = async () => {
-    try {
-      const response = await api.get(`${VITE_BACKEND_URL}/files`, {});
-      return response.data;
-    } catch (err) {
-      console.error("Error fetching files:", err);
-    }
+    const offset = (page - 1) * 5;
+    const response = await api.get(
+      `${VITE_BACKEND_URL}/files?offset=${offset}&limit=5`
+    );
+    return response.data;
   };
 
-  const { data, isLoading, error, isError } = useQuery<File[], Error>({
-    queryKey: ["files", status],
+  const { data, isLoading, error, isError } = useQuery<
+    PaginatedFilesResponse,
+    Error
+  >({
+    queryKey: ["files", page, status],
     queryFn: fetchFiles,
   });
 
   useEffect(() => {
     if (data) {
-      setItems(data);
+      setItems(data.files);
     }
   }, [data]);
 
   const handleCheckboxChange = (file: File) => {
-    const updated = { ...selectedFiles };
-    if (updated[file.id]) {
-      delete updated[file.id];
-    } else {
-      updated[file.id] = file;
-    }
-    setSelectedFiles(updated);
+    setSelectedFiles((prev) => {
+      const updated = { ...prev };
+      if (updated[file.id]) {
+        delete updated[file.id];
+      } else {
+        updated[file.id] = file;
+      }
+      return updated;
+    });
   };
+
   const deleteFileMutation = useMutation({
     mutationFn: async (fileId: string) => {
       setDeletingId(fileId);
       const res = await api.delete(`${VITE_BACKEND_URL}/files/${fileId}`);
       return res.data;
     },
-    onSuccess: (data) => {
-      console.log("File deleted successfully", data);
-      queryClient.invalidateQueries({ queryKey: ["files"] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["files", page] });
+      setDeletingId(null);
     },
     onError: (error) => {
       console.error("Error deleting file:", error);
-      return (
-        <>
-          <div>
-            <h1 className="text-red-600">
-              Error While Loading Data{error.message}
-            </h1>
-          </div>
-        </>
-      );
+      setDeletingId(null);
     },
   });
+
   const handleDeleteFile = (fileId: string) => {
     deleteFileMutation.mutate(fileId);
   };
 
-  if (isLoading) {
-    return <Loading />;
-  }
-  if (error || isError) {
+  if (isLoading) return <Loading />;
+
+  if (isError || error)
     return (
-      <>
-        <div>
-          <h1 className="text-red-600">
-            Error While Loading Data{error.message}
-          </h1>
-        </div>
-      </>
+      <div className="text-red-600 text-center">
+        Error While Loading Data: {error?.message}
+      </div>
     );
-  }
+
+  const totalPages = data?.total_pages || 1;
 
   return (
     <Card className="w-full max-w-sm">
@@ -121,21 +133,22 @@ const FileSelector = () => {
         <CardTitle>Uploaded Files</CardTitle>
         <CardDescription>Select the files you want to include</CardDescription>
       </CardHeader>
+
       <CardContent>
         {items && items.length > 0 ? (
-          <ul>
+          <ul className="space-y-2">
             {items.map((file) => (
               <li
                 key={file.id}
-                className="flex items-center justify-between border p-2 rounded-lg transition-all "
+                className="flex items-center justify-between border p-2 rounded-lg transition-all"
               >
                 <input
                   type="checkbox"
                   checked={!!selectedFiles[file.id]}
                   onChange={() => handleCheckboxChange(file)}
-                  className="accent-gray-600 hover:accent-gray-600 cursor-pointer transition-all"
+                  className="accent-gray-600 cursor-pointer"
                   title="Add the file"
-                />{" "}
+                />
                 <div className="ml-6 flex-1">
                   <span
                     className="cursor-pointer hover:text-gray-500 transition-all"
@@ -168,7 +181,76 @@ const FileSelector = () => {
           <p>No files uploaded yet.</p>
         )}
       </CardContent>
-      <CardFooter className="flex-col gap-2"></CardFooter>
+
+      <CardFooter className="flex-col gap-2">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                className={`${
+                  page === 1 ? "pointer-events-none opacity-50" : ""
+                }`}
+              />
+            </PaginationItem>
+            {totalPages <= 2 ? (
+              [...Array(totalPages)].map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    href="#"
+                    isActive={page === i + 1}
+                    onClick={() => setPage(i + 1)}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))
+            ) : (
+              <>
+                {/* Show first 2 pages */}
+                {[1, 2].map((num) => (
+                  <PaginationItem key={num}>
+                    <PaginationLink
+                      href="#"
+                      isActive={page === num}
+                      onClick={() => setPage(num)}
+                    >
+                      {num}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+
+                {/* Ellipsis for skipped pages */}
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+
+                {/* Always show last page */}
+                <PaginationItem>
+                  <PaginationLink
+                    href="#"
+                    isActive={page === totalPages}
+                    onClick={() => setPage(totalPages)}
+                  >
+                    {totalPages}
+                  </PaginationLink>
+                </PaginationItem>
+              </>
+            )}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                className={`${
+                  page === totalPages ? "pointer-events-none opacity-50" : ""
+                }`}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </CardFooter>
     </Card>
   );
 };

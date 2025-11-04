@@ -8,7 +8,7 @@ from backend_server import auth
 
 from fastapi.responses import JSONResponse
 from backend_server.auth import verify_token
-
+from fastapi_pagination import Page, add_pagination, paginate
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -20,15 +20,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/")
 async def root():
     return {"message": "Hello from FastAPI!"}
 
 
+
+
+
+
 @app.middleware("http")
 async def check_user_token(request: Request, call_next):
-    # print(request.headers)
     public_paths = [
         "/token",
         "/register",
@@ -36,6 +38,8 @@ async def check_user_token(request: Request, call_next):
         "/docs",
         "/openapi.json",
         "/get_file_data",
+        "/students",
+       
     ]
 
     if request.method == "OPTIONS":
