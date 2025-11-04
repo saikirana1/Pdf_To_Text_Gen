@@ -19,7 +19,7 @@ interface CounterState {
   setError: (value: string) => void;
   setLoading: (value: boolean) => void;
   setThemeStatus: (value: string) => void;
-  setPage: (value: number) => void;
+  setPage: (value: number | ((prev: number) => number)) => void;
 }
 interface Message {
   role: "user" | "assistant";

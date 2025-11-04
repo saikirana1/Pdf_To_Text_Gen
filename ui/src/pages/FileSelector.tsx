@@ -188,7 +188,7 @@ const FileSelector = () => {
             <PaginationItem>
               <PaginationPrevious
                 href="#"
-                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                onClick={() => setPage((p: number) => Math.max(p - 1, 1))}
                 className={`${
                   page === 1 ? "pointer-events-none opacity-50" : ""
                 }`}
