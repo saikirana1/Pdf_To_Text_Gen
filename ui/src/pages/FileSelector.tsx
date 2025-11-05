@@ -265,7 +265,7 @@ const FileSelector = () => {
           </CardFooter>
         </Card>
       </div>
-      <div className="w-3/5">
+      <div className="w-3/5 overflow-auto h-[80vh] ">
         <Card>
           <CardHeader>
             <CardTitle>PDF Preview</CardTitle>
