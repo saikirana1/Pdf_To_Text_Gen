@@ -33,6 +33,7 @@
     "react-hook-speech-to-text": "^0.8.0",
     "react-hot-toast": "^2.6.0",
     "react-markdown": "^10.1.0",
+    "react-pdf": "^10.2.0",
     "react-router-dom": "^7.9.1",
     "react-spinners": "^0.17.0",
     "rehype-raw": "^7.0.0",
