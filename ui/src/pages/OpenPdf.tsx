@@ -1,5 +1,5 @@
 import Loading from "@/CustomHooks/loading";
-import { Loader2Icon } from "lucide-react";
+
 import { useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 
@@ -14,7 +14,7 @@ interface OpenPdfProps {
 
 function PdfComp({ fileUrl }: OpenPdfProps) {
   const [numPages, setNumPages] = useState<number>(0);
-  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [pageNumber] = useState<number>(1);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
     setNumPages(numPages);
