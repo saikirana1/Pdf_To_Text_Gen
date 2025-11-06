@@ -6,6 +6,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -13,7 +14,10 @@ import {
 import { useTheme } from "next-themes";
 import { Sun, Moon, MessageSquare, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import logo from "@/assets/logo.png";
+// import { Avatar } from "@mui/material";
+// import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export function AppSidebar() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
@@ -43,7 +47,17 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Teclusion</SidebarGroupLabel>
+          <SidebarHeader className="flex  items-center justify-center">
+            <div className="flex  flex-col items-center space-x-2 space-y-0.5">
+              <h1 className=" text-center">Powered By</h1>
+
+              <img
+                src={logo}
+                alt="Company Logo"
+                className="w-40 h-30  object-cover mt-2 "
+              />
+            </div>
+          </SidebarHeader>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
