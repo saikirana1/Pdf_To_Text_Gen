@@ -5,7 +5,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -15,9 +14,7 @@ import { useTheme } from "next-themes";
 import { Sun, Moon, MessageSquare, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.png";
-// import { Avatar } from "@mui/material";
-// import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 export function AppSidebar() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
