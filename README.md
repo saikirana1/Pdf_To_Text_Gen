@@ -73,3 +73,20 @@ flowchart TD
     K -->|Both| N[Combine Results]
     N --> O[Generate Final Answer]
 ```
+
+
+
+
+
+
+flowchart TD
+
+    A[UI (Vercel)] --> B[Cloudflare<br/>(Firewall, CDN, DDoS Protection)]
+
+    B --> C[AWS App Runner<br/>(FastAPI Backend)]
+
+    C --> D[Neon DB]
+    C --> E[Pinecone]
+    C --> F[OpenAI]
+    C --> G[Redis]
+    C --> H[S3 / R2]
